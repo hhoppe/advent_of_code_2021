@@ -4,6 +4,7 @@
 
 IPython/Jupyter [notebook](https://github.com/hhoppe/advent_of_code_2021/blob/main/advent_of_code_2021.ipynb) by [Hugues Hoppe](http://hhoppe.com/) with solutions to the [2021 Advent of Code puzzles](https://adventofcode.com/2021).
 Completed in December 2021.
+See [reddit](https://www.reddit.com/r/adventofcode/comments/rtx354/advent_of_code_2021_notebook_of_compact_and_fast/?utm_source=share&utm_medium=web2x&context=3).
 
 In this notebook, I explore both "compact" and "fast" code versions, along with data visualizations.
 
@@ -17,7 +18,7 @@ Here are some visualization results:
 <a href="#day11">day11</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day11.gif" height="140">
 <br/>
 <a href="#day13">day13</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day13.gif" height="200">
-<a href="#day15">day15</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day15.png" height="200">
+<a href="#day15">day15</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day15.gif" height="200">
 <br/>
 <a href="#day17">day17</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day17.png" height="200">
 <a href="#day20">day20</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day20.gif" height="200">
