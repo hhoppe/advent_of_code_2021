@@ -17,24 +17,24 @@
 #
 # Here are some visualization results:
 #
-# <a href="#day5">day5</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day05.png" height="200">
-# <a href="#day9">day9</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day09.gif" height="200">
-# <a href="#day11">day11</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day11.gif" height="140">
+# <a href="#day5">day5</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day05.png" width="200">&emsp;
+# <a href="#day9">day9</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day09.gif" width="200">&emsp;
+# <a href="#day11">day11</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day11.gif" width="140">
 # <br/>
-# <a href="#day13">day13</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day13.gif" height="200">
-# <a href="#day15">day15</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day15.gif" height="200">
+# <a href="#day13">day13</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day13.gif" width="300">&emsp;
+# <a href="#day15">day15</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day15.gif" width="200">
 # <br/>
-# <a href="#day17">day17</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day17.png" height="200">
-# <a href="#day20">day20</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day20.gif" height="200">
+# <a href="#day17">day17</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day17.png" width="200">&emsp;
+# <a href="#day20">day20</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day20.gif" width="200">
 # <br/>
-# <a href="#day21">day21</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day21.png" height="200">
-# <a href="#day23">day23</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day23.gif" height="100">
-# <a href="#day25">day25</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day25.gif" height="200">
+# <a href="#day21">day21</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day21.png" width="200">&emsp;
+# <a href="#day23">day23</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day23.gif" width="200">&emsp;
+# <a href="#day25">day25</a><img src="https://github.com/hhoppe/advent_of_code_2021/raw/main/results/day25.gif" width="200">
 #
 
 # %% [markdown]
 # <a name="preamble"></a>
-# ## Preamble: Common code
+# ## Preamble
 
 # %%
 # !command -v ffmpeg >/dev/null || (apt-get -qq update && apt-get -qq -y install ffmpeg) >/dev/null
@@ -102,7 +102,8 @@ except ModuleNotFoundError:
   numba_njit = hh.noop_decorator
 
 # %%
-advent = advent_of_code_hhoppe.Advent(year=YEAR, input_url=INPUT_URL, answer_url=ANSWER_URL)
+advent = advent_of_code_hhoppe.Advent(
+    year=YEAR, input_url=INPUT_URL, answer_url=ANSWER_URL)
 
 # %%
 hh.adjust_jupyterlab_markdown_width()
@@ -2646,7 +2647,6 @@ if 'numba' in globals():
 puzzle = advent.puzzle(day=19)
 
 # %%
-#@title
 s1 = """
 --- scanner 0 ---
 404,-588,-901
@@ -2785,7 +2785,6 @@ s1 = """
 -652,-548,-490
 30,-46,-14
 """
-print(f'Defines s1 with {s1.count("scanner")} scanners.')
 
 
 # %%
@@ -3107,7 +3106,6 @@ check_eq(process2(s1), 3621)
 puzzle = advent.puzzle(day=20)
 
 # %%
-#@title
 s1 = """
 ..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....#..#..##..###..######.###...####..#..#####..##..#.#####...##.#.#..#.##..#.#......#.###.######.###.####...#.##.##..#..#..#####.....#.#....###..#.##......#.....#..#..#..##..#...##.######.####.####.#.#...#.......#..#.#.#...####.##.#......#..#...##.#.##..#...##.#.##..###.#......#.#.......#.#.#.####.###.##...#.....####.#..#..#.##.#....##..#.####....##...##..#...#......#.#.......#.......##..####..#...#.#.#...##..#.#..###..#####........#..####......#..#
 
@@ -3117,8 +3115,6 @@ s1 = """
 ..#..
 ..###
 """
-
-print('Define s1.')
 
 
 # %%
@@ -3487,9 +3483,6 @@ puzzle.verify(2, process2)  # ~21 ms.
 puzzle = advent.puzzle(day=22)
 
 # %%
-#@title
-print('Define s1, s2, s3.')
-
 s1 = """
 on x=10..12,y=10..12,z=10..12
 on x=11..13,y=11..13,z=11..13
