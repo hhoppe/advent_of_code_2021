@@ -104,6 +104,9 @@ except ModuleNotFoundError:
 # %%
 advent = advent_of_code_hhoppe.Advent(year=YEAR, input_url=INPUT_URL, answer_url=ANSWER_URL)
 
+# %%
+hh.adjust_jupyterlab_markdown_width()
+
 # %% [markdown]
 # ### Helper functions
 
@@ -852,7 +855,7 @@ def process2(s):  # Faster; precompute seg sets for each permutation.
   lookup = {'abcefg': 0, 'cf': 1, 'acdeg': 2, 'acdfg': 3, 'bcdf': 4,
             'abdfg': 5, 'abdefg': 6, 'acf': 7, 'abcdefg': 8, 'abcdfg': 9}
   valids = {''.join(permutation): set(frozenset(k.translate(
-                str.maketrans('abcdefg', ''.join(permutation)))) for k in lookup)
+               str.maketrans('abcdefg', ''.join(permutation)))) for k in lookup)
             for permutation in itertools.permutations('abcdefg')}
   total = 0
 
@@ -1859,7 +1862,8 @@ if 0:
     grid = np.array([list(line) for line in s.strip().split('\n')]).astype(int)
     if part2:
       grid = np.concatenate([
-          np.concatenate([(grid + (y + x - 1)) % 9 + 1 for x in range(5)], axis=1)
+          np.concatenate([(grid + (y + x - 1)) % 9 + 1 for x in range(5)],
+                         axis=1)
           for y in range(5)
       ], axis=0)
 
@@ -5239,3 +5243,10 @@ if 0:
 # (i.e., after `pip install numba`):
 # - `numpy` requires older `numba==0.51.2`
 # - `njit(cache=True)` fails at runtime, for unknown reason.
+
+# %% [markdown]
+# <!-- For Emacs:
+# Local Variables:
+# fill-column: 80
+# End:
+# -->
