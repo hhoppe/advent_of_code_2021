@@ -1037,9 +1037,9 @@ def process1(s, part2=False, visualize=False):  # Faster using numpy.
   _, count = np.unique(yx.reshape(2, -1), axis=1, return_counts=True)
 
   if visualize:
-    np.random.seed(0)
     _, inverse = np.unique(yx.reshape(2, -1), axis=1, return_inverse=True)
-    cmap = np.uint8(np.random.choice(range(30, 150), (len(count), 3)))
+    cmap = np.uint8(np.random.default_rng(0).choice(
+        range(30, 150), (len(count), 3)))
     cmap[count == 1] = 0
     cmap[count >= heapq.nlargest(3, count)[-1]] += 100  # 2 are tied for third!
     basin = cmap[inverse.reshape(grid.shape)]
@@ -1082,8 +1082,8 @@ def process1(s, part2=False, visualize=False):  # Faster, using flat indexing.
     _, inverse = np.unique(indices, return_inverse=True)
     basins = {}
     for highlight in range(2):
-      np.random.seed(0)
-      cmap = np.uint8(np.random.choice(range(30, 150), (len(count), 3)))
+      cmap = np.uint8(np.random.default_rng(0).choice(
+          range(30, 150), (len(count), 3)))
       cmap[count == 1] = 0
       if highlight:
         cmap[count >= heapq.nlargest(3, count)[-1]] += 100
