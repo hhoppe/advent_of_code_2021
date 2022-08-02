@@ -53,8 +53,7 @@ import math
 import re
 import sys
 import textwrap
-from typing import Any, Callable, Dict, List, Mapping
-from typing import Optional, Set, Tuple, Union
+from typing import Any, List, Tuple
 
 import advent_of_code_hhoppe  # https://github.com/hhoppe/advent-of-code-hhoppe/blob/main/advent_of_code_hhoppe/__init__.py
 import advent_of_code_ocr  # https://github.com/bsoyka/advent-of-code-ocr/blob/main/advent_of_code_ocr/__init__.py
@@ -78,7 +77,8 @@ YEAR = 2021
 PROFILE = 'google.Hugues_Hoppe.965276'
 # PROFILE = 'github.hhoppe.1452460'
 TAR_URL = f'https://github.com/hhoppe/advent_of_code_{YEAR}/raw/main/data/{PROFILE}.tar.gz'
-hh.run(f"if [ ! -d data/{PROFILE} ]; then (mkdir -p data && cd data && wget -q {TAR_URL} && tar xzf {PROFILE}.tar.gz); fi")
+hh.run(f"if [ ! -d data/{PROFILE} ]; then (mkdir -p data && cd data &&"
+       f" wget -q {TAR_URL} && tar xzf {PROFILE}.tar.gz); fi")
 INPUT_URL = f'data/{PROFILE}/{{year}}_{{day:02d}}_input.txt'
 ANSWER_URL = f'data/{PROFILE}/{{year}}_{{day:02d}}{{part_letter}}_answer.txt'
 
@@ -798,9 +798,9 @@ puzzle.verify(2, process2)  # ~1450 ms.
 
 # %%
 def process2(s):  # Faster; cache a translation table for each permutation.
-  lookup = {frozenset(k): str(v) for k, v in
-      {'abcefg': 0, 'cf': 1, 'acdeg': 2, 'acdfg': 3, 'bcdf': 4,
-       'abdfg': 5, 'abdefg': 6, 'acf': 7, 'abcdefg': 8, 'abcdfg': 9}.items()}
+  lookup0 = {'abcefg': 0, 'cf': 1, 'acdeg': 2, 'acdfg': 3, 'bcdf': 4,
+             'abdfg': 5, 'abdefg': 6, 'acf': 7, 'abcdefg': 8, 'abcdfg': 9}
+  lookup = {frozenset(k): str(v) for k, v in lookup0.items()}
   total = 0
 
   @functools.lru_cache(maxsize=None)   # (@functools.cache in Python 3.9)
@@ -842,7 +842,7 @@ def process2(s):  # Faster; loop over permutations first, then lines.
       if all(input in decode for input in ins[i]):
         total += int(''.join(str(decode[frozenset(output)])
                              for output in outs[i]))
-        ins.pop(i), outs.pop(i)
+        _ = ins.pop(i), outs.pop(i)
 
   assert not ins
   return total
@@ -1150,11 +1150,11 @@ def process1(s):
   total = 0
   for line in s.strip('\n').split('\n'):
     stack = []
-    for i in range(len(line)):
-      if line[i] in '([{<':
-        stack.append(line[i])
-      elif stack.pop() != open_from_close[line[i]]:
-        total += {')': 3, ']': 57, '}': 1197, '>': 25137, '': 0}[line[i]]
+    for ch in line:
+      if ch in '([{<':
+        stack.append(ch)
+      elif stack.pop() != open_from_close[ch]:
+        total += {')': 3, ']': 57, '}': 1197, '>': 25137, '': 0}[ch]
 
   return total
 
@@ -1168,10 +1168,10 @@ def process2(s):
   scores = []
   for line in s.strip('\n').split('\n'):
     stack = []
-    for i in range(len(line)):
-      if line[i] in '([{<':
-        stack.append(line[i])
-      elif stack.pop() != open_from_close[line[i]]:
+    for ch in line:
+      if ch in '([{<':
+        stack.append(ch)
+      elif stack.pop() != open_from_close[ch]:
         break
     else:
       score = 0
@@ -1536,8 +1536,11 @@ def process1(s, part2=False):  # Most compact; set-based.
 
   for line in chunk2.split('\n'):
     axis, value = {'x': 0, 'y': 1}[line[11:12]], int(line[13:])
-    fold = lambda xy: tuple(c if i != axis or c < value else 2 * value - c
-                            for i, c in enumerate(xy))
+
+    def fold(xy):
+      return tuple(c if i != axis or c < value else 2 * value - c
+                   for i, c in enumerate(xy))
+
     dots = {fold(xy) for xy in dots}
     if not part2:
       return len(dots)
@@ -1702,7 +1705,7 @@ def process1(s, part2=False):  # Faster (avoiding inefficient sum()).
   pairs = collections.Counter(start[i:i+2] for i in range(len(start) - 1))
   rules = dict(line.split(' -> ') for line in lines[2:])
 
-  for step in range(40 if part2 else 10):
+  for _ in range(40 if part2 else 10):
     new_pairs = collections.Counter()
     for pair, count in pairs.items():
       new_pairs[pair[0] + rules[pair]] += count
@@ -1859,7 +1862,7 @@ _ = process2(puzzle.input, visualize=True)
 
 # %%
 if 0:
-  def process1(s, part2=False, visualize=False):  # Try A* search.
+  def process1(s, part2=False):  # Try A* search.
     grid = np.array([list(line) for line in s.strip().split('\n')]).astype(int)
     if part2:
       grid = np.concatenate([
@@ -1992,7 +1995,7 @@ def process1(s, part2=False):  # Directly evaluate.
     s = s[n:]
     return value
 
-  def parse():
+  def parse_s():
     nonlocal sum_versions
     version = read_bits(3)
     sum_versions += version
@@ -2010,14 +2013,14 @@ def process1(s, part2=False):  # Directly evaluate.
       num_bits = read_bits(15)
       len0 = len(s)
       while len0 - len(s) != num_bits:
-        operands.append(parse())
+        operands.append(parse_s())
     else:
       num_packets = read_bits(11)
       for _ in range(num_packets):
-        operands.append(parse())
+        operands.append(parse_s())
     return operation_for_id[packet_id](*operands)
 
-  result = parse()
+  result = parse_s()
   return result if part2 else sum_versions
 
 
@@ -2054,7 +2057,7 @@ def process1(s, part2=False, visualize=0):  # Construct tree first.
   name_for_id = {0: 'sum', 1: 'prod', 2: 'min', 3: 'max',
                  5: 'gt', 6: 'lt', 7: 'eq'}
 
-  def parse():
+  def parse_s():
 
     def read_bits(n):
       nonlocal s
@@ -2077,14 +2080,14 @@ def process1(s, part2=False, visualize=0):  # Construct tree first.
       max_length = read_bits(15)
       len0 = len(s)
       while len0 - len(s) != max_length:
-        operands.append(parse())
+        operands.append(parse_s())
     else:
       max_packets = read_bits(11)
       for _ in range(max_packets):
-        operands.append(parse())
+        operands.append(parse_s())
     return version, packet_id, operands
 
-  tree = parse()
+  tree = parse_s()
   assert all(ch == '0' for ch in s)
 
   def sum_versions(node):
@@ -2913,7 +2916,7 @@ puzzle.verify(2, process2)  # ~120 ms.
 def process1(s, part2=False):  # Brute-force approach.
   # https://github.com/shaeberling/euler/blob/master/kotlin/src/com/s13g/aoc/aoc2021/Day19.kt
   scanners = [
-    set([tuple(map(int, line.split(','))) for line in s2.split('\n')[1:]])
+    {tuple(map(int, line.split(','))) for line in s2.split('\n')[1:]}
     for s2 in s.strip().split('\n\n')
   ]
   ROTATIONS = tuple(
@@ -3810,8 +3813,8 @@ class Kdtree:
     assert ndim > 0 and max_level > 0
     self.ndim = ndim
     self.max_level = max_level
-    self.entries: List[self.Entry] = []
-    self.nodes: List[self.Node] = []
+    self.entries: List['Kdtree.Entry'] = []
+    self.nodes: List['Kdtree.Node'] = []
 
   def add(self, bb0: Tuple[float, ...], bb1: Tuple[float, ...], data: Any):
     """Stores the box-bounded element."""
@@ -3885,6 +3888,7 @@ class Kdtree:
           self.entries[entry_index] = self.Entry(
               (-1.0,) * self.ndim, (-1.0,) * self.ndim, None)
           break
+    assert entry_index is not None
     node.entries.remove(entry_index)
 
   def search(self, bb0: Tuple[float, ...], bb1: Tuple[float, ...]):
@@ -4073,8 +4077,7 @@ def process1(s, part2=False):  # Mangled numba version; fastest.
     def replace(tuple_, index, value):
       if using_numba:
         return numba.cpython.unsafe.tuple.tuple_setitem(tuple_, index, value)
-      else:
-        return tuple_[:index] + (value,) + tuple_[index + 1:]
+      return tuple_[:index] + (value,) + tuple_[index + 1:]
 
     def to_tuple(array):
       if using_numba:
@@ -5224,7 +5227,8 @@ if 0:  # Restrict the path search in Day 15 to a matrix band.
 # %%
 if 0:
   ZIP_URL = f'https://github.com/hhoppe/advent_of_code_{YEAR}/raw/main/data/{PROFILE}.zip'
-  hh.run(f"if [ ! -d data/{PROFILE} ]; then (mkdir -p data && cd data && wget -q {ZIP_URL} && unzip -q {PROFILE}); fi")
+  hh.run(f"if [ ! -d data/{PROFILE} ]; then (mkdir -p data && cd data &&"
+         f" wget -q {ZIP_URL} && unzip -q {PROFILE}); fi")
 
   # Create a new zip file, quietly (-q) and ignoring relative paths (-j).
   hh.run(f"""!zip -q -j - ~/.config/aocd/'{PROFILE.replace("_", " ")}'/*.txt >/content/data.zip""")
