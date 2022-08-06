@@ -43,6 +43,8 @@
 # !pip install -q advent-of-code-ocr advent-of-code-hhoppe hhoppe-tools mediapy numba parse
 
 # %%
+from __future__ import annotations
+
 import collections
 import copy
 import dataclasses
@@ -53,7 +55,7 @@ import math
 import re
 import sys
 import textwrap
-from typing import Any, List, Tuple
+from typing import Any
 
 import advent_of_code_hhoppe  # https://github.com/hhoppe/advent-of-code-hhoppe/blob/main/advent_of_code_hhoppe/__init__.py
 import advent_of_code_ocr  # https://github.com/bsoyka/advent-of-code-ocr/blob/main/advent_of_code_ocr/__init__.py
@@ -3796,15 +3798,15 @@ class Kdtree:
 
   @dataclasses.dataclass
   class Entry:
-    bb0: Tuple[float, ...]
-    bb1: Tuple[float, ...]
+    bb0: tuple[float, ...]
+    bb1: tuple[float, ...]
     data: Any
 
   @dataclasses.dataclass
   class Node:
     axis: int  # Hyperplane axis, satisfying 0 <= axis < ndim.
     value: float  # Hyperplane coordinate (in [0.0, 1.0]).
-    entries: List[int] = dataclasses.field(default_factory=list)
+    entries: list[int] = dataclasses.field(default_factory=list)
     l: int = -1  # Node index for subtree with low values.
     h: int = -1  # Node index for subtree with high values.
 
@@ -3813,10 +3815,10 @@ class Kdtree:
     assert ndim > 0 and max_level > 0
     self.ndim = ndim
     self.max_level = max_level
-    self.entries: List['Kdtree.Entry'] = []
-    self.nodes: List['Kdtree.Node'] = []
+    self.entries: list[Kdtree.Entry] = []
+    self.nodes: list[Kdtree.Node] = []
 
-  def add(self, bb0: Tuple[float, ...], bb1: Tuple[float, ...], data: Any):
+  def add(self, bb0: tuple[float, ...], bb1: tuple[float, ...], data: Any):
     """Stores the box-bounded element."""
     assert all(0.0 <= b0 <= b1 <= 1.0 for b0, b1 in zip(bb0, bb1))
     entry_index = len(self.entries)
@@ -3853,7 +3855,7 @@ class Kdtree:
 
     self.nodes[node_index].entries.append(entry_index)
 
-  def remove(self, bb0: Tuple[float, ...], bb1: Tuple[float, ...], data: Any):
+  def remove(self, bb0: tuple[float, ...], bb1: tuple[float, ...], data: Any):
     """Removes the previously added element."""
     assert all(0.0 <= b0 <= b1 <= 1.0 for b0, b1 in zip(bb0, bb1))
     # entry = self.Entry(bb0, bb1, data)
@@ -3891,7 +3893,7 @@ class Kdtree:
     assert entry_index is not None
     node.entries.remove(entry_index)
 
-  def search(self, bb0: Tuple[float, ...], bb1: Tuple[float, ...]):
+  def search(self, bb0: tuple[float, ...], bb1: tuple[float, ...]):
     """Yields elements that overlap the bounding-box search range."""
     assert all(0.0 <= b0 <= b1 <= 1.0 for b0, b1 in zip(bb0, bb1))
 
