@@ -55,7 +55,8 @@ import math
 import re
 import sys
 import textwrap
-from typing import Any
+import typing
+from typing import Any, Generic, Iterator, TypeVar
 
 import advent_of_code_hhoppe  # https://github.com/hhoppe/advent-of-code-hhoppe/blob/main/advent_of_code_hhoppe/__init__.py
 import advent_of_code_ocr  # https://github.com/bsoyka/advent-of-code-ocr/blob/main/advent_of_code_ocr/__init__.py
@@ -63,6 +64,9 @@ import hhoppe_tools as hh  # https://github.com/hhoppe/hhoppe-tools/blob/main/hh
 import mediapy as media
 import numpy as np
 import parse
+
+_T = TypeVar('_T')
+_T2 = TypeVar('_T2')
 
 # %%
 if not media.video_is_available():
@@ -3783,7 +3787,7 @@ puzzle.verify(2, process2)  # ~380 ms.
 
 
 # %%
-class Kdtree:
+class Kdtree(Generic[_T]):
   """Spatial structure that splits space using hyperplanes in successive dims.
 
   In this K-D tree implementation, the original bounding volume is the unit
@@ -3797,10 +3801,10 @@ class Kdtree:
   """
 
   @dataclasses.dataclass
-  class Entry:
+  class Entry(Generic[_T2]):
     bb0: tuple[float, ...]
     bb1: tuple[float, ...]
-    data: Any
+    data: _T2 | None
 
   @dataclasses.dataclass
   class Node:
@@ -3815,14 +3819,15 @@ class Kdtree:
     assert ndim > 0 and max_level > 0
     self.ndim = ndim
     self.max_level = max_level
-    self.entries: list[Kdtree.Entry] = []
+    self.entries: list[Kdtree.Entry[_T]] = []
     self.nodes: list[Kdtree.Node] = []
 
-  def add(self, bb0: tuple[float, ...], bb1: tuple[float, ...], data: Any):
+  def add(self, bb0: tuple[float, ...], bb1: tuple[float, ...],
+          data: _T) -> None:
     """Stores the box-bounded element."""
     assert all(0.0 <= b0 <= b1 <= 1.0 for b0, b1 in zip(bb0, bb1))
     entry_index = len(self.entries)
-    self.entries.append(self.Entry(bb0, bb1, data))
+    self.entries.append(self.Entry[_T](bb0, bb1, data))
     node_index = 0
     values = [0.5] * self.ndim
     level = 0
@@ -3855,10 +3860,11 @@ class Kdtree:
 
     self.nodes[node_index].entries.append(entry_index)
 
-  def remove(self, bb0: tuple[float, ...], bb1: tuple[float, ...], data: Any):
+  def remove(self, bb0: tuple[float, ...], bb1: tuple[float, ...],
+             data: _T) -> None:
     """Removes the previously added element."""
     assert all(0.0 <= b0 <= b1 <= 1.0 for b0, b1 in zip(bb0, bb1))
-    # entry = self.Entry(bb0, bb1, data)
+    # entry = self.Entry[_T](bb0, bb1, data)
     entry_index = None
     node_index = 0
     level = 0
@@ -3887,17 +3893,21 @@ class Kdtree:
         entry2 = self.entries[entry_index2]
         if entry2.bb0 == bb0 and entry2.bb1 == bb1 and entry2.data == data:
           entry_index = entry_index2
-          self.entries[entry_index] = self.Entry(
+          self.entries[entry_index] = self.Entry[_T](
               (-1.0,) * self.ndim, (-1.0,) * self.ndim, None)
           break
     assert entry_index is not None
     node.entries.remove(entry_index)
 
-  def search(self, bb0: tuple[float, ...], bb1: tuple[float, ...]):
+  def search(
+      self, bb0: tuple[float, ...], bb1: tuple[float, ...]
+  ) -> Iterator[tuple[tuple[float, ...], tuple[float, ...], _T]]:
     """Yields elements that overlap the bounding-box search range."""
     assert all(0.0 <= b0 <= b1 <= 1.0 for b0, b1 in zip(bb0, bb1))
 
-    def recurse(node_index):
+    def recurse(
+        node_index: int
+    ) -> Iterator[tuple[tuple[float, ...], tuple[float, ...], _T]]:
       while True:
         node = self.nodes[node_index]
         for entry_index in node.entries:
@@ -3906,7 +3916,7 @@ class Kdtree:
             if e0 > b1 or e1 < b0:
               break
           else:
-            yield entry.bb0, entry.bb1, entry.data
+            yield entry.bb0, entry.bb1, typing.cast(_T, entry.data)
         axis = node.axis
         value = node.value
         want_l = node.l >= 0 and bb0[axis] <= value
@@ -3926,8 +3936,8 @@ class Kdtree:
 
 
 def test_kdtree():
-  kdtree = Kdtree(ndim=1)
-  kdtree.add((0.1,), (0.2,), 'elem1')  # use tuples??
+  kdtree = Kdtree[str](ndim=1)
+  kdtree.add((0.1,), (0.2,), 'elem1')
   kdtree.add((0.7,), (0.8,), 'elem2')
   kdtree.add((0.4,), (0.6,), 'elem3')
   check_eq(list(kdtree.search((0.05,), (0.15,))), [((0.1,), (0.2,), 'elem1')])
@@ -3939,7 +3949,7 @@ def test_kdtree():
   check_eq({r[2] for r in kdtree.search((0.55,), (0.72,))}, {'elem3'})
   check_eq({r[2] for r in kdtree.search((0.15,), (0.95,))}, {'elem1', 'elem3'})
 
-  kdtree = Kdtree(ndim=2)
+  kdtree = Kdtree[str](ndim=2)
   kdtree.add((0.1, 0.15), (0.2, 0.25), 'elem1')
   kdtree.add((0.7, 0.3), (0.75, 0.35), 'elem2')
   kdtree.add((0.2, 0.8), (0.25, 0.85), 'elem3')
@@ -4017,7 +4027,7 @@ def process1(s, part2=False):  # Using Kdtree.
     return finalized
 
   # Entries are disjoint union of "on" cubes.
-  kdtree = Kdtree(ndim=3)
+  kdtree = Kdtree[Any](ndim=3)
 
   for state, cuboid in state_cuboids:
     cells_to_add, cells_to_delete = set(), set()
