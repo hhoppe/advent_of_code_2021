@@ -46,6 +46,7 @@
 from __future__ import annotations
 
 import collections
+from collections.abc import Iterator
 import copy
 import dataclasses
 import functools
@@ -56,7 +57,7 @@ import re
 import sys
 import textwrap
 import typing
-from typing import Any, Generic, Iterator, TypeVar
+from typing import Any, Generic, TypeVar
 
 import advent_of_code_hhoppe  # https://github.com/hhoppe/advent-of-code-hhoppe/blob/main/advent_of_code_hhoppe/__init__.py
 import advent_of_code_ocr  # https://github.com/bsoyka/advent-of-code-ocr/blob/main/advent_of_code_ocr/__init__.py
@@ -94,8 +95,8 @@ if 0:
   # See https://github.com/wimglenn/advent-of-code-data.
   hh.run('rm -f ~/.config/aocd/token*')
   # Fill-in the session cookie in the following:
-  hh.run(f"if [ '{PROFILE}' == 'google.Hugues_Hoppe.965276' ]; then mkdir -p ~/.config/aocd && echo 53616... >~/.config/aocd/token; fi")
-  hh.run(f"if [ '{PROFILE}' == 'github.hhoppe.1452460' ]; then mkdir -p ~/.config/aocd; echo 53616... >~/.config/aocd/token; fi")
+  hh.run(f"if [ '{PROFILE}' = 'google.Hugues_Hoppe.965276' ]; then mkdir -p ~/.config/aocd && echo 53616... >~/.config/aocd/token; fi")
+  hh.run(f"if [ '{PROFILE}' = 'github.hhoppe.1452460' ]; then mkdir -p ~/.config/aocd; echo 53616... >~/.config/aocd/token; fi")
   hh.run('pip install -q advent-of-code-data')
   import aocd
 
