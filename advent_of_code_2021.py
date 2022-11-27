@@ -83,8 +83,9 @@ YEAR = 2021
 PROFILE = 'google.Hugues_Hoppe.965276'
 # PROFILE = 'github.hhoppe.1452460'
 TAR_URL = f'https://github.com/hhoppe/advent_of_code_{YEAR}/raw/main/data/{PROFILE}.tar.gz'
-hh.run(f"if [ ! -d data/{PROFILE} ]; then (mkdir -p data && cd data &&"
-       f" wget -q {TAR_URL} && tar xzf {PROFILE}.tar.gz); fi")
+if 1:
+  hh.run(f"if [ ! -d data/{PROFILE} ]; then (mkdir -p data && cd data &&"
+         f" wget -q {TAR_URL} && tar xzf {PROFILE}.tar.gz); fi")
 INPUT_URL = f'data/{PROFILE}/{{year}}_{{day:02d}}_input.txt'
 ANSWER_URL = f'data/{PROFILE}/{{year}}_{{day:02d}}{{part_letter}}_answer.txt'
 
@@ -108,8 +109,7 @@ except ModuleNotFoundError:
   numba_njit = hh.noop_decorator
 
 # %%
-advent = advent_of_code_hhoppe.Advent(
-    year=YEAR, input_url=INPUT_URL, answer_url=ANSWER_URL)
+advent = advent_of_code_hhoppe.Advent(year=YEAR, input_url=INPUT_URL, answer_url=ANSWER_URL)
 
 # %%
 hh.adjust_jupyterlab_markdown_width()
@@ -5188,7 +5188,7 @@ def dummy_day1(s, *, part2=False):
 
   if part2:
     pass
-
+  # return None
 
 # check_eq(day1(s1), 17)
 # puzzle.verify(1, day1)
