@@ -455,7 +455,7 @@ s1 = """
 
 # %%
 def day5a(s, *, part2=False):  # Compact but slow; supports any dimension.
-  count: dict[tuple[int, int], int] = collections.Counter()
+  count: collections.Counter[tuple[int, int]] = collections.Counter()
   for line in s.strip().split('\n'):
     p, q = (np.array(list(map(int, t.split(',')))) for t in line.split(' -> '))
     if part2 or any(p == q):
@@ -476,7 +476,7 @@ puzzle.verify(2, day5_part2a)  # ~800 ms.
 
 # %%
 def day5b(s, *, part2=False):  # Faster, still with dict.
-  count: dict[tuple[int, int], int] = collections.defaultdict(int)
+  count: collections.defaultdict[tuple[int, int], int] = collections.defaultdict(int)
   for line in s.strip().split('\n'):
     pattern = r'^(\d+),(\d+) -> (\d+),(\d+)$'
     x1, y1, x2, y2 = map(int, hh.re_groups(pattern, line))
@@ -597,7 +597,7 @@ s1 = """3,4,3,1,2"""
 def day6a(s, *, part2=False):  # Initial solution, using Counter.
   counter = collections.Counter(map(int, s.strip().split(',')))
   for _ in range(256 if part2 else 80):
-    counter2 = collections.Counter[int]()
+    counter2: collections.Counter[int] = collections.Counter()
     for e, count in counter.items():
       if e == 0:
         counter2[8] += count
@@ -635,7 +635,7 @@ if 0:
   def day6_test(s):
     counter = collections.Counter(map(int, s.strip().split(',')))
     for i in range(80):
-      counter2 = collections.Counter()
+      counter2: collections.Counter[int] = collections.Counter()
       for e, count in counter.items():
         if e == 0:
           counter2[8] += count
@@ -1715,13 +1715,13 @@ def day14(s, *, part2=False):  # Faster (avoiding inefficient sum()).
   rules = dict(line.split(' -> ') for line in lines[2:])
 
   for _ in range(40 if part2 else 10):
-    new_pairs = collections.Counter[str]()
+    new_pairs: collections.Counter[str] = collections.Counter()
     for pair, count in pairs.items():
       new_pairs[pair[0] + rules[pair]] += count
       new_pairs[rules[pair] + pair[1]] += count
     pairs = new_pairs
 
-  letters_in_pairs = collections.Counter[str]()
+  letters_in_pairs: collections.Counter[str] = collections.Counter()
   for pair, count in pairs.items():
     for letter in pair:
       letters_in_pairs[letter] += count
@@ -2858,8 +2858,8 @@ def day19a(s, *, part2=False):  # Fast.
       continue  # Already joined.
     intersection = all_signature_sets[i] & all_signature_sets[j]
 
-    match_count = collections.defaultdict[int, collections.defaultdict[int, int]](
-        lambda: collections.defaultdict(int))
+    match_count: collections.defaultdict[int, collections.defaultdict[int, int]] = (
+        collections.defaultdict(lambda: collections.defaultdict(int)))
     for encoding, indices_i in all_signatures[i].items():
       if encoding in intersection:
         indices_j = all_signatures[j][encoding]
