@@ -3143,8 +3143,7 @@ def day20a(s, *, part2=False):  # Slow.
     new_grid = np.full_like(grid, False)
     for y in range(1, grid.shape[0] - 1):
       for x in range(1, grid.shape[1] - 1):
-        neighb = [grid[y + dy, x + dx]
-                  for dy in (-1, 0, 1) for dx in (-1, 0, 1)]
+        neighb = [grid[y + dy, x + dx] for dy in (-1, 0, 1) for dx in (-1, 0, 1)]
         index = int(''.join(str(int(value)) for value in neighb), 2)
         new_grid[y, x] = table[index]
     grid = new_grid[1:-1, 1:-1]
@@ -3203,8 +3202,7 @@ def day20(s, *, part2=False, visualize=False):  # Same with visualization.
     neighb = [np.roll(grid, dyx, (0, 1))[1:-1, 1:-1] for dyx in dyxs]
     grid = lookup[np.moveaxis(np.array(neighb), 0, -1).dot(2**np.arange(9))]
     if visualize and cycle % 2 == 0:
-      images.append(np.pad(
-          grid, num_cycles - cycle, constant_values=not outside_value))
+      images.append(np.pad(grid, num_cycles - cycle, constant_values=not outside_value))
 
   if visualize:
     images = [images[0]] * 5 + images + [images[-1]] * 5
@@ -3331,8 +3329,8 @@ def day21_part2b(s):  # Avoiding functools.lru_cache().
             if new_score0 >= 21:
               wins[score0, score1, pos0, pos1, 0] += count
             else:
-              wins[score0, score1, pos0, pos1, :] += count * (
-                  wins[score1, new_score0, pos1, new_pos0, ::-1])
+              wins[score0, score1, pos0, pos1, :] += (
+                  count * wins[score1, new_score0, pos1, new_pos0, ::-1])
 
   return wins[0, 0, pos[0] - 1, pos[1] - 1, :].max()
 
@@ -3359,8 +3357,7 @@ def day21_part2c(s):  # Numpy, vectorized on pos1.
           if new_score0 >= 21:
             wins[score0, score1, pos0, :, 0] += count
           else:
-            wins[score0, score1, pos0, :, :] += count * (
-                wins[score1, new_score0, :, new_pos0, ::-1])
+            wins[score0, score1, pos0, :, :] += count * wins[score1, new_score0, :, new_pos0, ::-1]
 
   return wins[0, 0, pos[0] - 1, pos[1] - 1].max()
 
@@ -3673,8 +3670,7 @@ def day22c(s, *, part2=False):  # Using CSG of boxes.
 
   def subdivide_a_subtracting_b(a, b):  # Slow because up to 27 subcells.
     coords = [sorted((a[c][0], a[c][1], b[c][0], b[c][1])) for c in range(3)]
-    intervals = [[(c1, c2) for c1, c2 in ((x0, x1 - 1), (x1, x2), (x2 + 1, x3))
-                  if c1 <= c2]
+    intervals = [[(c1, c2) for c1, c2 in ((x0, x1 - 1), (x1, x2), (x2 + 1, x3)) if c1 <= c2]
                  for x0, x1, x2, x3 in coords]
     for subcell in itertools.product(*intervals):
       if inside(subcell, a) and not inside(subcell, b):
@@ -3746,8 +3742,7 @@ def day22d(s, *, part2=False):  # Faster by reducing CSG fragment count.
           new_boxes.append(box)  # No subdivision along this dimension.
           continue
         if a1 < b1 and a2 > b2:
-          finalized.extend((replace(box, dim, (a1, b1 - 1)),
-                            replace(box, dim, (b2 + 1, a2))))
+          finalized.extend((replace(box, dim, (a1, b1 - 1)), replace(box, dim, (b2 + 1, a2))))
           box2 = replace(box, dim, (b1, b2))
         elif a1 >= b1 and a2 > b2:
           box2 = replace(box, dim, (a1, b2))
@@ -4015,8 +4010,7 @@ def day22e(s, *, part2=False):  # Using Kdtree.
           new_boxes.append(box)  # No subdivision along this dimension.
           continue
         if a1 < b1 and a2 > b2:
-          finalized.extend((replace(box, dim, (a1, b1 - 1)),
-                            replace(box, dim, (b2 + 1, a2))))
+          finalized.extend((replace(box, dim, (a1, b1 - 1)), replace(box, dim, (b2 + 1, a2))))
           box2 = replace(box, dim, (b1, b2))
         elif a1 >= b1 and a2 > b2:
           box2 = replace(box, dim, (a1, b2))
@@ -4117,8 +4111,7 @@ def day22(s, *, part2=False):  # Mangled numba version; fastest.
             new_boxes.append(box)  # No subdivision along this dimension.
             continue
           if a1 < b1 and a2 > b2:
-            finalized.extend((replace(box, dim, (a1, b1 - 1)),
-                              replace(box, dim, (b2 + 1, a2))))
+            finalized.extend((replace(box, dim, (a1, b1 - 1)), replace(box, dim, (b2 + 1, a2))))
             box2 = replace(box, dim, (b1, b2))
           elif a1 >= b1 and a2 > b2:
             box2 = replace(box, dim, (a1, b2))
@@ -4316,8 +4309,7 @@ def day23b(s, *, part2=False, visualize=False):  # With visualization.
         continue
       i1 = 7 + row * 4 + j
       move_right = i0 <= j + 1
-      if all(state[k] == '.' for k in (
-          range(i0 + 1, 2 + j) if move_right else range(2 + j, i0))):
+      if all(state[k] == '.' for k in (range(i0 + 1, 2 + j) if move_right else range(2 + j, i0))):
         move_cost = ((j - i0 + 2) * 2 - (i0 == 0) + row if move_right else
                      (i0 - j - 1) * 2 - (i0 == 6) + row) * cost_for_id[id]
         yield i0, i1, move_cost
@@ -4368,8 +4360,7 @@ def day23b(s, *, part2=False, visualize=False):  # With visualization.
 
     def make_image(grid, size=12):
       cmap = {' ': (250,) * 3, '.': (240,) * 3, '#': (190,) * 3,
-              'A': (180, 0, 0), 'B': (0, 180, 0),
-              'C': (50, 50, 250), 'D': (250, 120, 0)}
+              'A': (180, 0, 0), 'B': (0, 180, 0), 'C': (50, 50, 250), 'D': (250, 120, 0)}
       return np.array([cmap[e] for e in grid.flat], dtype=np.uint8).reshape(
           *grid.shape, 3).repeat(size, axis=0).repeat(size, axis=1)
 
@@ -4507,8 +4498,7 @@ def day23c(s, *, part2=False):  # Dijkstra or A* search.
       if candidate_d < distances[state2]:
         distances[state2] = candidate_d
         # https://en.wikipedia.org/wiki/A*_search_algorithm
-        f = (candidate_d + lower_bound_cost(state2) if use_a_star else
-             candidate_d)
+        f = candidate_d + lower_bound_cost(state2) if use_a_star else candidate_d
         heapq.heappush(pq, (f, state2))
 
 
@@ -4591,8 +4581,7 @@ def day23(s, *, part2=False):  # Dijkstra/A*, but mangled to support numba.
         if state2 not in distances or candidate_d < distances[state2]:
           distances[state2] = candidate_d
           # https://en.wikipedia.org/wiki/A*_search_algorithm
-          f = (candidate_d + lower_bound_cost(state2) if use_a_star else
-               candidate_d)
+          f = candidate_d + lower_bound_cost(state2) if use_a_star else candidate_d
           heapq.heappush(pq, (f, state2))
 
       # Move from the hallway position `i0` to a room `j`.
@@ -4734,8 +4723,7 @@ def day24a(s, *, part2=False, verbose=0):  # Careful, with emulator verification
         input = input[1:]
       else:
         reg1 = ord(args[1]) - ord('w')
-        value = (regs[ord(args[2]) - ord('w')] if args[2] in 'wxyz'
-                 else int(args[2]))
+        value = regs[ord(args[2]) - ord('w')] if args[2] in 'wxyz' else int(args[2])
         if op == 'add':
           regs[reg1] += value
         elif op == 'mul':
@@ -4758,10 +4746,8 @@ def day24a(s, *, part2=False, verbose=0):  # Careful, with emulator verification
 
   assert len(lines) == 14 * 18 == 252
   params = {4: 'div z ', 5: 'add x ', 15: 'add y '}
-  assert all(lines[i].startswith(s)
-             for m, s in params.items() for i in range(m, 253, 18))
-  a, b, c = [[int(lines[i].split()[-1]) for i in range(m, 253, 18)]
-             for m in params]
+  assert all(lines[i].startswith(s) for m, s in params.items() for i in range(m, 253, 18))
+  a, b, c = [[int(lines[i].split()[-1]) for i in range(m, 253, 18)] for m in params]
 
   solution: list[int | None] = [None] * 14
   stack = []
@@ -4797,8 +4783,7 @@ puzzle.verify(2, day24_part2a)  # ~1 ms.
 # %%
 def day24(s, *, part2=False):  # Compact.
   lines = s.strip('\n').split('\n')
-  a, b, c = [[int(lines[i].split()[-1]) for i in range(m, 253, 18)]
-             for m in (4, 5, 15)]
+  a, b, c = [[int(lines[i].split()[-1]) for i in range(m, 253, 18)] for m in (4, 5, 15)]
   solution = [1 if part2 else 9] * 14
   stack = []
   for i in range(14):
