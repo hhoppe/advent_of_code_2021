@@ -167,9 +167,9 @@ def day1a(s, *, part2=False):  # Solution based on generators.
 check_eq(day1a(s1), 7)
 puzzle.verify(1, day1a)  # ~1 ms.
 
-day1_part2a = functools.partial(day1a, part2=True)
-check_eq(day1_part2a(s1), 5)
-puzzle.verify(2, day1_part2a)  # ~2 ms.
+day1a_part2 = functools.partial(day1a, part2=True)
+check_eq(day1a_part2(s1), 5)
+puzzle.verify(2, day1a_part2)  # ~2 ms.
 
 
 # %%
@@ -382,9 +382,9 @@ def day4a(s, *, part2=False):  # Compact.
 check_eq(day4a(s1), 4512)
 puzzle.verify(1, day4a)  # ~10 ms.
 
-day4_part2a = functools.partial(day4a, part2=True)
-check_eq(day4_part2a(s1), 1924)
-puzzle.verify(2, day4_part2a)  # ~10 ms.
+day4a_part2 = functools.partial(day4a, part2=True)
+check_eq(day4a_part2(s1), 1924)
+puzzle.verify(2, day4a_part2)  # ~10 ms.
 
 
 # %%
@@ -469,9 +469,9 @@ def day5a(s, *, part2=False):  # Compact but slow; supports any dimension.
 check_eq(day5a(s1), 5)
 puzzle.verify(1, day5a)  # ~480 ms.
 
-day5_part2a = functools.partial(day5a, part2=True)
-check_eq(day5_part2a(s1), 12)
-puzzle.verify(2, day5_part2a)  # ~800 ms.
+day5a_part2 = functools.partial(day5a, part2=True)
+check_eq(day5a_part2(s1), 12)
+puzzle.verify(2, day5a_part2)  # ~800 ms.
 
 
 # %%
@@ -499,8 +499,8 @@ def day5b(s, *, part2=False):  # Faster, still with dict.
 
 
 puzzle.verify(1, day5b)  # ~90 ms.
-day5_part2b = functools.partial(day5b, part2=True)
-puzzle.verify(2, day5_part2b)  # ~180 ms.
+day5b_part2 = functools.partial(day5b, part2=True)
+puzzle.verify(2, day5b_part2)  # ~180 ms.
 
 
 # %%
@@ -531,9 +531,9 @@ def day5c(s, *, part2=False, size=1000):  # All numpy; clever diagonal slicing.
 check_eq(day5c(s1, size=10), 5)
 puzzle.verify(1, day5c)  # ~6 ms.
 
-day5_part2c = functools.partial(day5c, part2=True)
-check_eq(day5_part2c(s1), 12)
-puzzle.verify(2, day5_part2c)  # ~9 ms.
+day5c_part2 = functools.partial(day5c, part2=True)
+check_eq(day5c_part2(s1), 12)
+puzzle.verify(2, day5c_part2)  # ~9 ms.
 
 
 # %%
@@ -608,8 +608,8 @@ def day6a(s, *, part2=False):  # Initial solution, using Counter.
   return sum(counter.values())  # (counter.total() in Python 3.10)
 
 puzzle.verify(1, day6a)  # ~1 ms.
-day6_part2a = functools.partial(day6a, part2=True)
-puzzle.verify(2, day6_part2a)  # ~3 ms.
+day6a_part2 = functools.partial(day6a, part2=True)
+puzzle.verify(2, day6a_part2)  # ~3 ms.
 
 
 # %%
@@ -691,8 +691,8 @@ def day7a(s, *, part2=False):  # Brute-force search.
 
 
 puzzle.verify(1, day7a)  # ~14 ms.
-day7_part2a = functools.partial(day7a, part2=True)
-puzzle.verify(2, day7_part2a)  # ~52 ms.
+day7a_part2 = functools.partial(day7a, part2=True)
+puzzle.verify(2, day7a_part2)  # ~52 ms.
 
 
 # %%
@@ -761,14 +761,14 @@ print(len(list(itertools.permutations('abcdefg'))))
 
 
 # %%
-def day8_part1a(s):
+def day8a_part1(s):
   total = 0
   for line in s.strip('\n').split('\n'):
     _, outputs = map(str.split, line.split(' | '))
     total += sum(len(output) in [2, 3, 4, 7] for output in outputs)
   return total
 
-check_eq(day8_part1a(s1), 26)
+check_eq(day8a_part1(s1), 26)
 
 def day8_part1(s):
   return sum(len(output) in [2, 3, 4, 7] for line in s.strip('\n').split('\n')
@@ -779,7 +779,7 @@ puzzle.verify(1, day8_part1)  # ~0 ms.
 
 
 # %%
-def day8_part2a(s):  # Brute-force; most compact.
+def day8a_part2(s):  # Brute-force; most compact.
   lookup = {'abcefg': '0', 'cf': '1', 'acdeg': '2', 'acdfg': '3',
             'bcdf': '4', 'abdfg': '5', 'abdefg': '6', 'acf': '7',
             'abcdefg': '8', 'abcdfg': '9'}
@@ -801,12 +801,12 @@ def day8_part2a(s):  # Brute-force; most compact.
 
   return total
 
-check_eq(day8_part2a(s1), 61229)
-puzzle.verify(2, day8_part2a)  # ~1450 ms.
+check_eq(day8a_part2(s1), 61229)
+puzzle.verify(2, day8a_part2)  # ~1450 ms.
 
 
 # %%
-def day8_part2b(s):  # Faster; cache a translation table for each permutation.
+def day8b_part2(s):  # Faster; cache a translation table for each permutation.
   lookup0 = {'abcefg': 0, 'cf': 1, 'acdeg': 2, 'acdfg': 3, 'bcdf': 4,
              'abdfg': 5, 'abdefg': 6, 'acf': 7, 'abcdefg': 8, 'abcdfg': 9}
   lookup = {frozenset(k): str(v) for k, v in lookup0.items()}
@@ -830,12 +830,12 @@ def day8_part2b(s):  # Faster; cache a translation table for each permutation.
 
   return total
 
-check_eq(day8_part2b(s1), 61229)
-puzzle.verify(2, day8_part2b)  # ~810 ms.
+check_eq(day8b_part2(s1), 61229)
+puzzle.verify(2, day8b_part2)  # ~810 ms.
 
 
 # %%
-def day8_part2c(s):  # Faster; loop over permutations first, then lines.
+def day8c_part2(s):  # Faster; loop over permutations first, then lines.
   lookup = {'abcefg': 0, 'cf': 1, 'acdeg': 2, 'acdfg': 3, 'bcdf': 4,
             'abdfg': 5, 'abdefg': 6, 'acf': 7, 'abcdefg': 8, 'abcdfg': 9}
   lines = s.strip('\n').split('\n')
@@ -856,12 +856,12 @@ def day8_part2c(s):  # Faster; loop over permutations first, then lines.
   assert not ins
   return total
 
-check_eq(day8_part2c(s1), 61229)
-puzzle.verify(2, day8_part2c)  # ~360 ms.
+check_eq(day8c_part2(s1), 61229)
+puzzle.verify(2, day8c_part2)  # ~360 ms.
 
 
 # %%
-def day8_part2d(s):  # Faster; precompute seg sets for each permutation.
+def day8d_part2(s):  # Faster; precompute seg sets for each permutation.
   lookup = {'abcefg': 0, 'cf': 1, 'acdeg': 2, 'acdfg': 3, 'bcdf': 4,
             'abdfg': 5, 'abdefg': 6, 'acf': 7, 'abcdefg': 8, 'abcdfg': 9}
   valids = {''.join(permutation): set(frozenset(k.translate(
@@ -884,12 +884,12 @@ def day8_part2d(s):  # Faster; precompute seg sets for each permutation.
 
   return total
 
-check_eq(day8_part2d(s1), 61229)
-puzzle.verify(2, day8_part2d)  # ~240 ms.
+check_eq(day8d_part2(s1), 61229)
+puzzle.verify(2, day8d_part2)  # ~240 ms.
 
 
 # %%
-def day8_part2e(s):  # Faster; loop over permutations first, and use sets of lines.
+def day8e_part2(s):  # Faster; loop over permutations first, and use sets of lines.
   lookup = {'abcefg': 0, 'cf': 1, 'acdeg': 2, 'acdfg': 3, 'bcdf': 4,
             'abdfg': 5, 'abdefg': 6, 'acf': 7, 'abcdefg': 8, 'abcdfg': 9}
   lines = {(frozenset(frozenset(input) for input in inputs),
@@ -913,8 +913,8 @@ def day8_part2e(s):  # Faster; loop over permutations first, and use sets of lin
   assert not lines
   return total
 
-check_eq(day8_part2e(s1), 61229)
-puzzle.verify(2, day8_part2e)  # ~170 ms.
+check_eq(day8e_part2(s1), 61229)
+puzzle.verify(2, day8e_part2)  # ~170 ms.
 
 
 # %%
@@ -1022,9 +1022,9 @@ def day9a(s, *, part2=False):  # Solution using Union-Find.  Relatively slow.
 check_eq(day9a(s1), 15)
 puzzle.verify(1, day9a)  # ~5 ms.
 
-day9_part2a = functools.partial(day9a, part2=True)
-check_eq(day9_part2a(s1), 1134)
-puzzle.verify(2, day9_part2a)  # ~110 ms.
+day9a_part2 = functools.partial(day9a, part2=True)
+check_eq(day9a_part2(s1), 1134)
+puzzle.verify(2, day9a_part2)  # ~110 ms.
 
 
 # %%
@@ -1063,9 +1063,9 @@ def day9b(s, *, part2=False, visualize=False):  # Faster using numpy.
 check_eq(day9b(s1), 15)
 puzzle.verify(1, day9b)  # ~4 ms.
 
-day9_part2b = functools.partial(day9b, part2=True)
-check_eq(day9_part2b(s1), 1134)
-puzzle.verify(2, day9_part2b)  # ~15 ms.
+day9b_part2 = functools.partial(day9b, part2=True)
+check_eq(day9b_part2(s1), 1134)
+puzzle.verify(2, day9b_part2)  # ~15 ms.
 
 
 # %%
@@ -1265,9 +1265,9 @@ def day11a(s, *, part2=False):  # Compact.
 check_eq(day11a(s1), 1656)
 puzzle.verify(1, day11a)  # ~110 ms.
 
-day11_part2a = functools.partial(day11a, part2=True)
-check_eq(day11_part2a(s1), 195)
-puzzle.verify(2, day11_part2a)  # ~225 ms.
+day11a_part2 = functools.partial(day11a, part2=True)
+check_eq(day11a_part2(s1), 195)
+puzzle.verify(2, day11a_part2)  # ~225 ms.
 
 
 # %%
@@ -1302,9 +1302,9 @@ def day11b(s, *, part2=False):  # Faster, using ndenumerate and bool array.
 check_eq(day11b(s1), 1656)
 puzzle.verify(1, day11b)  # ~16 ms.
 
-day11_part2b = functools.partial(day11b, part2=True)
-check_eq(day11_part2b(s1), 195)
-puzzle.verify(2, day11_part2b)  # ~30 ms.
+day11b_part2 = functools.partial(day11b, part2=True)
+check_eq(day11b_part2(s1), 195)
+puzzle.verify(2, day11b_part2)  # ~30 ms.
 
 
 # %%
@@ -1448,10 +1448,10 @@ check_eq(day12a(s1), 10)
 check_eq(day12a(s2), 226)
 puzzle.verify(1, day12a)  # ~14 ms.
 
-day12_part2a = functools.partial(day12a, part2=True)
-check_eq(day12_part2a(s1), 36)
-check_eq(day12_part2a(s2), 3509)
-puzzle.verify(2, day12_part2a)  # ~440 ms.
+day12a_part2 = functools.partial(day12a, part2=True)
+check_eq(day12a_part2(s1), 36)
+check_eq(day12a_part2(s2), 3509)
+puzzle.verify(2, day12a_part2)  # ~440 ms.
 
 
 # %%
@@ -1562,8 +1562,8 @@ def day13a(s, *, part2=False):  # Most compact; set-based.
 check_eq(day13a(s1), 17)
 puzzle.verify(1, day13a)  # ~2 ms.
 
-day13_part2a = functools.partial(day13a, part2=True)
-puzzle.verify(2, day13_part2a)  # ~6 ms.  e.g. 'EPLGRULR'.
+day13a_part2 = functools.partial(day13a, part2=True)
+puzzle.verify(2, day13a_part2)  # ~6 ms.  e.g. 'EPLGRULR'.
 
 
 # %%
@@ -1601,9 +1601,9 @@ def day13b(s, *, part2=False, visualize=False):  # More readable; a bit faster.
 check_eq(day13b(s1), 17)
 puzzle.verify(1, day13b)  # ~2 ms.
 
-day13_part2b = functools.partial(day13b, part2=True)
-puzzle.verify(2, day13_part2b)  # ~4 ms.  e.g. 'EPLGRULR'.
-_ = day13_part2b(puzzle.input, visualize=True)
+day13b_part2 = functools.partial(day13b, part2=True)
+puzzle.verify(2, day13b_part2)  # ~4 ms.  e.g. 'EPLGRULR'.
+_ = day13b_part2(puzzle.input, visualize=True)
 
 
 # %%
@@ -1702,9 +1702,9 @@ def day14a(s, *, part2=False):  # Compact.
 check_eq(day14a(s1), 1588)
 puzzle.verify(1, day14a)  # ~18 ms.
 
-day14_part2a = functools.partial(day14a, part2=True)
-check_eq(day14_part2a(s1), 2188189693529)
-puzzle.verify(2, day14_part2a)  # ~85 ms.
+day14a_part2 = functools.partial(day14a, part2=True)
+check_eq(day14a_part2(s1), 2188189693529)
+puzzle.verify(2, day14a_part2)  # ~85 ms.
 
 
 # %%
@@ -1809,9 +1809,9 @@ def day15a(s, *, part2=False):  # Compact.
 
 check_eq(day15a(s1), 40)
 puzzle.verify(1, day15a)  # ~60 ms.
-day15_part2a = functools.partial(day15a, part2=True)
-check_eq(day15_part2a(s1), 315)
-puzzle.verify(2, day15_part2a)  # ~1700 ms.
+day15a_part2 = functools.partial(day15a, part2=True)
+check_eq(day15a_part2(s1), 315)
+puzzle.verify(2, day15a_part2)  # ~1700 ms.
 
 
 # %%
@@ -1861,9 +1861,9 @@ if 0:
 
   check_eq(day15b(s1), 40)
   puzzle.verify(1, day15b)  # ~140 ms.
-  day15_part2b = functools.partial(day15b, part2=True)
-  check_eq(day15_part2b(s1), 315)
-  puzzle.verify(2, day15_part2b)  # ~1850 ms.
+  day15b_part2 = functools.partial(day15b, part2=True)
+  check_eq(day15b_part2(s1), 315)
+  puzzle.verify(2, day15b_part2)  # ~1850 ms.
 
 
 # %%
@@ -1907,9 +1907,9 @@ def day15c(s, *, part2=False):  # Fastest: several opposing sweeps, but can fail
 
 check_eq(day15c(s1), 40)
 # puzzle.verify(1, day15c)  # ~11 ms.  (Commented because it could fail.)
-day15_part2c = functools.partial(day15c, part2=True)
-check_eq(day15_part2c(s1), 315)
-# puzzle.verify(2, day15_part2c)  # ~27 ms.  (Commented because it could fail.)
+day15c_part2 = functools.partial(day15c, part2=True)
+check_eq(day15c_part2(s1), 315)
+# puzzle.verify(2, day15c_part2)  # ~27 ms.  (Commented because it could fail.)
 
 # %%
 def day15(s, *, part2=False, visualize=False):  # padded, numba, visualization.
@@ -2039,16 +2039,16 @@ check_eq(day16a('C0015000016115A2E0802F182340'), 23)
 check_eq(day16a('A0016C880162017C3686B18A3D4780'), 31)
 puzzle.verify(1, day16a)  # ~2 ms.
 
-day16_part2a = functools.partial(day16a, part2=True)
-check_eq(day16_part2a('C200B40A82'), 3)
-check_eq(day16_part2a('04005AC33890'), 54)
-check_eq(day16_part2a('880086C3E88112'), 7)
-check_eq(day16_part2a('CE00C43D881120'), 9)
-check_eq(day16_part2a('D8005AC2A8F0'), 1)
-check_eq(day16_part2a('F600BC2D8F'), 0)
-check_eq(day16_part2a('9C005AC2F8F0'), 0)
-check_eq(day16_part2a('9C0141080250320F1802104A08'), 1)
-puzzle.verify(2, day16_part2a)  # ~2 ms.
+day16a_part2 = functools.partial(day16a, part2=True)
+check_eq(day16a_part2('C200B40A82'), 3)
+check_eq(day16a_part2('04005AC33890'), 54)
+check_eq(day16a_part2('880086C3E88112'), 7)
+check_eq(day16a_part2('CE00C43D881120'), 9)
+check_eq(day16a_part2('D8005AC2A8F0'), 1)
+check_eq(day16a_part2('F600BC2D8F'), 0)
+check_eq(day16a_part2('9C005AC2F8F0'), 0)
+check_eq(day16a_part2('9C0141080250320F1802104A08'), 1)
+puzzle.verify(2, day16a_part2)  # ~2 ms.
 
 
 # %%
@@ -2201,9 +2201,9 @@ def day17a(s, *, part2=False):  # Slow.
 check_eq(day17a(s1), 45)
 puzzle.verify(1, day17a)  # ~320 ms.
 
-day17_part2a = functools.partial(day17a, part2=True)
-check_eq(day17_part2a(s1), 112)
-puzzle.verify(2, day17_part2a)  # ~320 ms.
+day17a_part2 = functools.partial(day17a, part2=True)
+check_eq(day17a_part2(s1), 112)
+puzzle.verify(2, day17a_part2)  # ~320 ms.
 
 
 # %%
@@ -2420,9 +2420,9 @@ check_eq(day18_parse_reduce_a(s5), '[[[[6,6],[7,6]],[[7,7],[7,0]]],[[[7,7],[7,7]
 check_eq(day18a(s5), 4140)
 puzzle.verify(1, day18a)  # ~250 ms.
 
-day18_part2a = functools.partial(day18a, part2=True)
-check_eq(day18_part2a(s5), 3993)
-# puzzle.verify(2, day18_part2a)  # ~4100 ms.
+day18a_part2 = functools.partial(day18a, part2=True)
+check_eq(day18a_part2(s5), 3993)
+# puzzle.verify(2, day18a_part2)  # ~4100 ms.
 
 # %%
 def day18b(s, *, part2=False, return_snail=False):  # Explode all in same pass.
@@ -2506,10 +2506,10 @@ check_eq(day18_parse_reduce_b(s5), '[[[[6,6],[7,6]],[[7,7],[7,0]]],[[[7,7],[7,7]
 check_eq(day18b(s5), 4140)
 puzzle.verify(1, day18b)  # ~140 ms.
 
-day18_part2b = functools.partial(day18b, part2=True)
-check_eq(day18_part2b(s5), 3993)
+day18b_part2 = functools.partial(day18b, part2=True)
+check_eq(day18b_part2(s5), 3993)
 if 'numba' not in globals():
-  puzzle.verify(2, day18_part2b)  # ~2600 ms.
+  puzzle.verify(2, day18b_part2)  # ~2600 ms.
 
 
 # %%
@@ -2917,9 +2917,9 @@ def day19a(s, *, part2=False):  # Fast.
 check_eq(day19a(s1), 79)
 puzzle.verify(1, day19a)  # ~120 ms.
 
-day19_part2a = functools.partial(day19a, part2=True)
-check_eq(day19_part2a(s1), 3621)
-puzzle.verify(2, day19_part2a)  # ~120 ms.
+day19a_part2 = functools.partial(day19a, part2=True)
+check_eq(day19a_part2(s1), 3621)
+puzzle.verify(2, day19a_part2)  # ~120 ms.
 
 
 # %%
@@ -2971,9 +2971,9 @@ def day19b(s, *, part2=False):  # Brute-force approach.
 check_eq(day19b(s1), 79)
 # puzzle.verify(1, day19b)  # ~35 s.
 
-day19_part2b = functools.partial(day19b, part2=True)
-check_eq(day19_part2b(s1), 3621)
-# puzzle.verify(2, day19_part2b)  # ~35 s.
+day19b_part2 = functools.partial(day19b, part2=True)
+check_eq(day19b_part2(s1), 3621)
+# puzzle.verify(2, day19b_part2)  # ~35 s.
 
 # %%
 def day19c(s, *, part2=False):  # Brute-force; encode 3D point/vector as integer.
@@ -3021,9 +3021,9 @@ def day19c(s, *, part2=False):  # Brute-force; encode 3D point/vector as integer
 check_eq(day19c(s1), 79)
 # puzzle.verify(1, day19c)  # ~11.5 s
 
-day19_part2c = functools.partial(day19c, part2=True)
-check_eq(day19_part2c(s1), 3621)
-# puzzle.verify(2, day19_part2c)  # ~11.6 s
+day19c_part2 = functools.partial(day19c, part2=True)
+check_eq(day19c_part2(s1), 3621)
+# puzzle.verify(2, day19c_part2)  # ~11.6 s
 
 # %%
 def day19(s, *, part2=False):  # Brute-force np.isin() with encoded points.
@@ -3157,9 +3157,9 @@ def day20a(s, *, part2=False):  # Slow.
 check_eq(day20a(s1), 35)
 puzzle.verify(1, day20a)  # ~165 ms.
 
-day20_part2a = functools.partial(day20a, part2=True)
-check_eq(day20_part2a(s1), 3351)
-# puzzle.verify(2, day20_part2a)  # Slow; ~10 s.
+day20a_part2 = functools.partial(day20a, part2=True)
+check_eq(day20a_part2(s1), 3351)
+# puzzle.verify(2, day20a_part2)  # Slow; ~10 s.
 
 # %%
 def day20b(s, *, part2=False):  # Most compact and fast.
@@ -3179,9 +3179,9 @@ def day20b(s, *, part2=False):  # Most compact and fast.
 check_eq(day20b(s1), 35)
 puzzle.verify(1, day20b)  # ~3 ms.
 
-day20_part2b = functools.partial(day20b, part2=True)
-check_eq(day20_part2b(s1), 3351)
-puzzle.verify(2, day20_part2b)  # ~66 ms.
+day20b_part2 = functools.partial(day20b, part2=True)
+check_eq(day20b_part2(s1), 3351)
+puzzle.verify(2, day20b_part2)  # ~66 ms.
 
 
 # %%
@@ -3283,7 +3283,7 @@ puzzle.verify(1, day21_part1)  # ~0 ms.
 
 
 # %%
-def day21_part2a(s):  # Simple 3 "for" loops and caching.
+def day21a_part2(s):  # Simple 3 "for" loops and caching.
   lines = s.strip('\n').split('\n')
   pos = [int(lines[0][27:]), int(lines[1][27:])]
 
@@ -3306,12 +3306,12 @@ def day21_part2a(s):  # Simple 3 "for" loops and caching.
   wins0, wins1 = compute(pos[0] - 1, pos[1] - 1, 0, 0)
   return max(wins0, wins1)
 
-check_eq(day21_part2a(s1), 444356092776315)
-puzzle.verify(2, day21_part2a)  # ~240 ms.
+check_eq(day21a_part2(s1), 444356092776315)
+puzzle.verify(2, day21a_part2)  # ~240 ms.
 
 
 # %%
-def day21_part2b(s):  # Avoiding functools.lru_cache().
+def day21b_part2(s):  # Avoiding functools.lru_cache().
   lines = s.strip('\n').split('\n')
   pos = [int(lines[0][27:]), int(lines[1][27:])]
   die_sum_distribution = collections.Counter(
@@ -3334,12 +3334,12 @@ def day21_part2b(s):  # Avoiding functools.lru_cache().
 
   return wins[0, 0, pos[0] - 1, pos[1] - 1, :].max()
 
-check_eq(day21_part2b(s1), 444356092776315)
-puzzle.verify(2, day21_part2b)  # ~850 ms.
+check_eq(day21b_part2(s1), 444356092776315)
+puzzle.verify(2, day21b_part2)  # ~850 ms.
 
 
 # %%
-def day21_part2c(s):  # Numpy, vectorized on pos1.
+def day21c_part2(s):  # Numpy, vectorized on pos1.
   lines = s.strip('\n').split('\n')
   pos = [int(lines[0][27:]), int(lines[1][27:])]
   die_sum_distribution = tuple(collections.Counter(
@@ -3361,12 +3361,12 @@ def day21_part2c(s):  # Numpy, vectorized on pos1.
 
   return wins[0, 0, pos[0] - 1, pos[1] - 1].max()
 
-check_eq(day21_part2c(s1), 444356092776315)
-puzzle.verify(2, day21_part2c)  # ~130 ms.
+check_eq(day21c_part2(s1), 444356092776315)
+puzzle.verify(2, day21c_part2)  # ~130 ms.
 
 
 # %%
-def day21_part2d(s, *, win_score=21, visualize=False):  # Most compact.
+def day21d_part2(s, *, win_score=21, visualize=False):  # Most compact.
   lines = s.strip('\n').split('\n')
   pos0, pos1 = int(lines[0][27:]) - 1, int(lines[1][27:]) - 1
   die_sum_distribution = tuple(collections.Counter(
@@ -3409,16 +3409,16 @@ def day21_part2d(s, *, win_score=21, visualize=False):  # Most compact.
 
   return max(*compute(pos0, pos1, 0, 0))
 
-check_eq(day21_part2d(s1), 444356092776315)
-puzzle.verify(2, day21_part2d)  # ~50 ms.
+check_eq(day21d_part2(s1), 444356092776315)
+puzzle.verify(2, day21d_part2)  # ~50 ms.
 
 # The conclusion is that starting first is a big advantage, but there are some
 # start locations where player 2 still has an advantage.
-_ = day21_part2d(puzzle.input, visualize=True)
+_ = day21d_part2(puzzle.input, visualize=True)
 
 # If the winning score is increased from 21 to 100, there is still a 5% edge
 # in starting first with the best position.
-# _ = day21_part2d(puzzle.input, win_score=100, visualize=True)
+# _ = day21d_part2(puzzle.input, win_score=100, visualize=True)
 
 # %%
 def day21_part2(s):  # Fastest, using numba.
@@ -3590,7 +3590,7 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
 
 
 # %%
-def day22_part1a(s):  # Initial specialized solution for part 1.
+def day22a_part1(s):  # Initial specialized solution for part 1.
   lines = s.strip('\n').split('\n')
   shape = 101, 101, 101
   grid = np.full(shape, 0, dtype=int)
@@ -3610,10 +3610,10 @@ def day22_part1a(s):  # Initial specialized solution for part 1.
   return np.count_nonzero(grid)
 
 
-check_eq(day22_part1a(s1), 39)
-check_eq(day22_part1a(s2), 590784)
-check_eq(day22_part1a(s3), 474140)
-puzzle.verify(1, day22_part1a)  # ~42 ms.
+check_eq(day22a_part1(s1), 39)
+check_eq(day22a_part1(s2), 590784)
+check_eq(day22a_part1(s3), 474140)
+puzzle.verify(1, day22a_part1)  # ~42 ms.
 
 
 # %%
@@ -3641,9 +3641,9 @@ check_eq(day22b(s2), 590784)
 check_eq(day22b(s3), 474140)
 puzzle.verify(1, day22b)  # ~8 ms.
 
-day22_part2b = functools.partial(day22b, part2=True)
-check_eq(day22_part2b(s3), 2758514936282235)  # ~14 ms.
-puzzle.verify(2, day22_part2b)  # ~2700 ms.
+day22b_part2 = functools.partial(day22b, part2=True)
+check_eq(day22b_part2(s3), 2758514936282235)  # ~14 ms.
+puzzle.verify(2, day22b_part2)  # ~2700 ms.
 
 
 # %%
@@ -3699,9 +3699,9 @@ check_eq(day22c(s2), 590784)
 check_eq(day22c(s3), 474140)
 puzzle.verify(1, day22c)  # ~25 ms.
 
-day22_part2c = functools.partial(day22c, part2=True)
-check_eq(day22_part2c(s3), 2758514936282235)
-puzzle.verify(2, day22_part2c)  # ~1350 ms.
+day22c_part2 = functools.partial(day22c, part2=True)
+check_eq(day22c_part2(s3), 2758514936282235)
+puzzle.verify(2, day22c_part2)  # ~1350 ms.
 
 
 # %%
@@ -3781,9 +3781,9 @@ check_eq(day22d(s2), 590784)
 check_eq(day22d(s3), 474140)
 puzzle.verify(1, day22d)  # ~9 ms.
 
-day22_part2d = functools.partial(day22d, part2=True)
-check_eq(day22_part2d(s3), 2758514936282235)
-puzzle.verify(2, day22_part2d)  # ~380 ms.
+day22d_part2 = functools.partial(day22d, part2=True)
+check_eq(day22d_part2(s3), 2758514936282235)
+puzzle.verify(2, day22d_part2)  # ~380 ms.
 
 
 # %%
@@ -4053,9 +4053,9 @@ check_eq(day22e(s2), 590784)
 check_eq(day22e(s3), 474140)
 puzzle.verify(1, day22e)  # ~14 ms.
 
-day22_part2e = functools.partial(day22e, part2=True)
-check_eq(day22_part2e(s3), 2758514936282235)
-puzzle.verify(2, day22_part2e)  # ~330 ms vs. previous ~380 ms.
+day22e_part2 = functools.partial(day22e, part2=True)
+check_eq(day22e_part2(s3), 2758514936282235)
+puzzle.verify(2, day22e_part2)  # ~330 ms vs. previous ~380 ms.
 # It looks like the overhead of maintaining the Kdtree is too great.
 
 # %%
@@ -4270,9 +4270,9 @@ def day23a(s, *, part2=False):  # Compact.
 check_eq(day23a(s1), 12521)  # ~700 ms  (~330 s without lru_cache())
 # puzzle.verify(1, day23a)  # ~3.2 s  (>4600 s without lru_cache())
 
-day23_part2a = functools.partial(day23a, part2=True)
-# check_eq(day23_part2a(s1), 44169)  # ~5.1 s.
-# puzzle.verify(2, day23_part2a)  # ~4.8 s.
+day23a_part2 = functools.partial(day23a, part2=True)
+# check_eq(day23a_part2(s1), 44169)  # ~5.1 s.
+# puzzle.verify(2, day23a_part2)  # ~4.8 s.
 
 # %%
 def day23b(s, *, part2=False, visualize=False):  # With visualization.
@@ -4398,10 +4398,10 @@ def day23b(s, *, part2=False, visualize=False):  # With visualization.
 check_eq(day23b(s1), 12521)  # ~700 ms
 # puzzle.verify(1, day23b)  # ~3.3 s  (>4600 s without lru_cache())
 
-day23_part2b = functools.partial(day23b, part2=True)
-# check_eq(day23_part2b(s1), 44169)  # ~5.1 s.
-# puzzle.verify(2, day23_part2b)  # ~5.0 s.
-_ = day23_part2b(puzzle.input, visualize=True)  # ~5.0 s.
+day23b_part2 = functools.partial(day23b, part2=True)
+# check_eq(day23b_part2(s1), 44169)  # ~5.1 s.
+# puzzle.verify(2, day23b_part2)  # ~5.0 s.
+_ = day23b_part2(puzzle.input, visualize=True)  # ~5.0 s.
 
 
 # %%
@@ -4505,9 +4505,9 @@ def day23c(s, *, part2=False):  # Dijkstra or A* search.
 check_eq(day23c(s1), 12521)  # ~0.18 s with A* (~0.7 s with Dijkstra).
 puzzle.verify(1, day23c)  # ~0.8s with A*  (~2.8 s with Dijkstra).
 
-day23_part2c = functools.partial(day23c, part2=True)
-# check_eq(day23_part2c(s1), 44169)  # ~4.9 s with A*  (~11 s with Dijkstra).
-# puzzle.verify(2, day23_part2c)  # ~6.0 s with A*  (~5.2 s with Dijkstra).
+day23c_part2 = functools.partial(day23c, part2=True)
+# check_eq(day23c_part2(s1), 44169)  # ~4.9 s with A*  (~11 s with Dijkstra).
+# puzzle.verify(2, day23c_part2)  # ~6.0 s with A*  (~5.2 s with Dijkstra).
 
 # %%
 def day23(s, *, part2=False):  # Dijkstra/A*, but mangled to support numba.
@@ -4776,8 +4776,8 @@ def day24a(s, *, part2=False, verbose=0):  # Careful, with emulator verification
 
 
 puzzle.verify(1, day24a)  # ~0 ms.
-day24_part2a = functools.partial(day24a, part2=True)
-puzzle.verify(2, day24_part2a)  # ~1 ms.
+day24a_part2 = functools.partial(day24a, part2=True)
+puzzle.verify(2, day24a_part2)  # ~1 ms.
 
 
 # %%
