@@ -918,7 +918,7 @@ puzzle.verify(2, day8e_part2)  # ~170 ms.
 
 
 # %%
-def day8_part2(s):  # Custom solution for the 7-segment LED; fastest.
+def day8_part2(s):  # Fastest; custom solution for the 7-segment LED.
   total = 0
   segs_from_digit: dict[int, frozenset[str]] = {}  # digit 0..9 -> frozenset of segments.
   rules: list[tuple[int, int, Callable[[frozenset[str]], bool]]] = [
@@ -1455,7 +1455,7 @@ puzzle.verify(2, day12a_part2)  # ~440 ms.
 
 
 # %%
-def day12(s, *, part2=False):  # 20x faster using lru_cache and frozenset.
+def day12(s, *, part2=False):  # Much faster using lru_cache and frozenset.
   graph = collections.defaultdict(list)
   for line in s.strip('\n').split('\n'):
     a, b = line.split('-')
@@ -1815,56 +1815,54 @@ puzzle.verify(2, day15a_part2)  # ~1700 ms.
 
 
 # %%
-if 0:
-  def day15b(s, *, part2=False):  # Try A* search.
-    grid = np.array([list(line) for line in s.strip().split('\n')]).astype(int)
-    if part2:
-      grid = np.concatenate([
-          np.concatenate([(grid + (y + x - 1)) % 9 + 1 for x in range(5)],
-                         axis=1)
-          for y in range(5)
-      ], axis=0)
+def day15b(s, *, part2=False):  # Try A* search.
+  grid = np.array([list(line) for line in s.strip().split('\n')]).astype(int)
+  if part2:
+    grid = np.concatenate([
+        np.concatenate([(grid + (y + x - 1)) % 9 + 1 for x in range(5)],
+                       axis=1)
+        for y in range(5)
+    ], axis=0)
 
-    grid = np.pad(grid, 1, constant_values=10**8)  # To avoid boundary checks.
-    c0 = grid.shape[0] - 2 + grid.shape[1] - 2
+  grid = np.pad(grid, 1, constant_values=10**8)  # To avoid boundary checks.
+  c0 = grid.shape[0] - 2 + grid.shape[1] - 2
 
-    def hfunc(yx):
-      heuristic_weight = 2
-      return (c0 - yx[0] - yx[1]) * heuristic_weight
+  def hfunc(yx):
+    heuristic_weight = 2
+    return (c0 - yx[0] - yx[1]) * heuristic_weight
 
-    start = 1, 1
-    destination = grid.shape[0] - 2, grid.shape[1] - 2
-    check_eq(hfunc(destination), 0)
-    distances = np.full(grid.shape, 10**6)
-    distances[start] = 0
-    pq = [(hfunc(start), start)]
-    best_solution = 10**6
-    while pq:
-      f, yx = heapq.heappop(pq)
-      d = distances[yx]
-      if yx == destination:
-        # return d
-        best_solution = min(best_solution, d)
-        # print(f'best_solution={best_solution}')
-      if 1 and d > best_solution + 40:
-        break
-      y, x = yx
-      for dy, dx in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-        yx2 = y + dy, x + dx
-        # https://en.wikipedia.org/wiki/A*_search_algorithm
-        g = d + grid[yx2]
-        if g < distances[yx2]:
-          distances[yx2] = g
-          f = g + hfunc(yx2)
-          heapq.heappush(pq, (f, yx2))
-    return best_solution
+  start = 1, 1
+  destination = grid.shape[0] - 2, grid.shape[1] - 2
+  check_eq(hfunc(destination), 0)
+  distances = np.full(grid.shape, 10**6)
+  distances[start] = 0
+  pq = [(hfunc(start), start)]
+  best_solution = 10**6
+  while pq:
+    f, yx = heapq.heappop(pq)
+    d = distances[yx]
+    if yx == destination:
+      # return d
+      best_solution = min(best_solution, d)
+      # print(f'best_solution={best_solution}')
+    if 1 and d > best_solution + 40:
+      break
+    y, x = yx
+    for dy, dx in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+      yx2 = y + dy, x + dx
+      # https://en.wikipedia.org/wiki/A*_search_algorithm
+      g = d + grid[yx2]
+      if g < distances[yx2]:
+        distances[yx2] = g
+        f = g + hfunc(yx2)
+        heapq.heappush(pq, (f, yx2))
+  return best_solution
 
-  check_eq(day15b(s1), 40)
-  puzzle.verify(1, day15b)  # ~140 ms.
-  day15b_part2 = functools.partial(day15b, part2=True)
-  check_eq(day15b_part2(s1), 315)
-  puzzle.verify(2, day15b_part2)  # ~1850 ms.
-
+check_eq(day15b(s1), 40)
+# puzzle.verify(1, day15b)  # ~140 ms.
+day15b_part2 = functools.partial(day15b, part2=True)
+check_eq(day15b_part2(s1), 315)
+# puzzle.verify(2, day15b_part2)  # ~1850 ms.
 
 # %%
 def day15c(s, *, part2=False):  # Fastest: several opposing sweeps, but can fail.
@@ -2425,7 +2423,7 @@ check_eq(day18a_part2(s5), 3993)
 # puzzle.verify(2, day18a_part2)  # ~4100 ms.
 
 # %%
-def day18b(s, *, part2=False, return_snail=False):  # Explode all in same pass.
+def day18b(s, *, part2=False, return_snail=False):  # Explode all in the same pass.
 
   def parse_snail(line):
     return eval(line)  # (Unsafe.) # pylint: disable=eval-used
@@ -2518,7 +2516,7 @@ def day18(s, *, part2=False, return_snail=False):
 
   def parse_snail(line):
     return np.array([-1 if ch == '[' else -2 if ch == ']' else int(ch)
-                    for ch in line.replace(',', '')])
+                     for ch in line.replace(',', '')])
 
   def format_snail(snail):
     result = []
@@ -2800,6 +2798,59 @@ s1 = """
 
 
 # %%
+def day19a(s, *, part2=False):  # Brute-force approach.
+  # https://github.com/shaeberling/euler/blob/master/kotlin/src/com/s13g/aoc/aoc2021/Day19.kt
+  scanners = [
+    {tuple(map(int, line.split(','))) for line in s2.split('\n')[1:]}
+    for s2 in s.strip().split('\n\n')
+  ]
+  ROTATIONS = tuple(
+      np.array(rows)
+      for diag in itertools.product([-1, 1], repeat=3)
+      for rows in itertools.permutations(np.diag(diag))
+      if np.linalg.det(rows) > 0
+  )
+  rotated_scans = [
+      [{tuple(rotation @ point) for point in scanner} for rotation in ROTATIONS]
+      for scanner in scanners
+  ]
+  aligned_points = scanners[0]
+  aligned_scanners = {0}
+  scanner_positions = []
+
+  while len(aligned_scanners) < len(scanners):
+    for aligned_point in tuple(aligned_points):
+      for scanner_index in range(len(scanners)):
+        if scanner_index not in aligned_scanners:
+          for rotated_scan in rotated_scans[scanner_index]:
+            for point0 in rotated_scan:
+              offset = np.array(aligned_point) - point0
+              o = tuple(offset)
+              count_matches = sum(  # (Optimized "point + offset".)
+                  (p[0] + o[0], p[1] + o[1], p[2] + o[2]) in aligned_points
+                  for p in rotated_scan)
+              if count_matches >= 11:
+                aligned_points.update(
+                    tuple(point + offset) for point in rotated_scan)
+                aligned_scanners.add(scanner_index)
+                scanner_positions.append(offset)
+                break
+
+  if not part2:
+    return len(aligned_points)
+
+  return max(abs(point1 - point2).sum()
+             for point1, point2 in itertools.combinations(scanner_positions, 2))
+
+
+check_eq(day19a(s1), 79)
+# puzzle.verify(1, day19a)  # ~35 s.
+
+day19a_part2 = functools.partial(day19a, part2=True)
+check_eq(day19a_part2(s1), 3621)
+# puzzle.verify(2, day19a_part2)  # ~35 s.
+
+# %%
 def day19_encode_3d(point):
   """Packs three 21-bit signed integers into a 64-bit int."""
   point = np.asarray(point)
@@ -2807,16 +2858,119 @@ def day19_encode_3d(point):
 
 def day19_decode_3d(value):
   """Extracts three 21-bit signed integers from a 64-bit int."""
-  value = np.atleast_1d(value)
-  x = (value + 2**41) // 2**42
-  value -= x * 2**42
-  y = (value + 2**20) // 2**21
-  z = value - y * 2**21
+  value2 = np.atleast_1d(value)
+  x = (value2 + 2**41) // 2**42
+  value2 -= x * 2**42
+  y = (value2 + 2**20) // 2**21
+  z = value2 - y * 2**21
   return np.concatenate((x, y, z), axis=-1)
 
 
 # %%
-def day19a(s, *, part2=False):  # Fast.
+def day19b(s, *, part2=False):  # Brute-force; encode 3D point/vector as integer.
+  scanners = [
+    np.array([list(map(int, line.split(','))) for line in s2.split('\n')[1:]])
+    for s2 in s.strip().split('\n\n')
+  ]
+  ROTATIONS = tuple(
+      np.array(rows)
+      for diag in itertools.product([-1, 1], repeat=3)
+      for rows in itertools.permutations(np.diag(diag))
+      if np.linalg.det(rows) > 0
+  )
+  rotated_scans = [
+      [set(day19_encode_3d(np.tensordot(rotation, scanner, (1, 1)).T))
+       for rotation in ROTATIONS]
+      for scanner in scanners
+  ]
+  aligned_points = rotated_scans[0][0]
+  aligned_scanners = {0}
+  scanner_positions = []
+
+  while len(aligned_scanners) < len(scanners):
+    for aligned_point in tuple(aligned_points):
+      for scanner_index in range(len(scanners)):
+        if scanner_index not in aligned_scanners:
+          for rotated_scan in rotated_scans[scanner_index]:
+            for point0 in rotated_scan:
+              offset = aligned_point - point0  # (3-vector encoded in an int64)
+              count_matches = sum(point + offset in aligned_points
+                                  for point in rotated_scan)
+              if count_matches >= 11:
+                aligned_points.update(point + offset for point in rotated_scan)
+                aligned_scanners.add(scanner_index)
+                scanner_positions.append(offset)
+                break
+
+  if not part2:
+    return len(aligned_points)
+
+  return max(np.abs(day19_decode_3d(point1 - point2)).sum()
+             for point1, point2 in itertools.combinations(scanner_positions, 2))
+
+
+check_eq(day19b(s1), 79)
+# puzzle.verify(1, day19b)  # ~11.5 s
+
+day19b_part2 = functools.partial(day19b, part2=True)
+check_eq(day19b_part2(s1), 3621)
+# puzzle.verify(2, day19b_part2)  # ~11.6 s
+
+# %%
+def day19c(s, *, part2=False):  # Brute-force np.isin() with encoded points.
+  scanners = [
+    np.array([list(map(int, line.split(','))) for line in s2.split('\n')[1:]])
+    for s2 in s.strip().split('\n\n')
+  ]
+  ROTATIONS = tuple(
+      np.array(rows)
+      for diag in itertools.product([-1, 1], repeat=3)
+      for rows in itertools.permutations(np.diag(diag))
+      if np.linalg.det(rows) > 0
+  )
+  rotated_scans = [
+      np.sort([day19_encode_3d(np.tensordot(rotation, scanner, (1, 1)).T)
+               for rotation in ROTATIONS], axis=-1)
+      for scanner in scanners
+  ]
+  aligned_points = rotated_scans[0][0]
+  aligned_scanners = {0}
+  scanner_positions = []
+
+  while len(aligned_scanners) < len(scanners):
+    for aligned_point in tuple(aligned_points):
+      for scanner_index in range(len(scanners)):
+        if scanner_index in aligned_scanners:
+          continue
+        t = rotated_scans[scanner_index].T  # [point_index][rot_index]
+        offset_scans = t + (aligned_point - t[:, None])
+        count_matches = np.isin(
+            offset_scans, aligned_points, assume_unique=True).sum(axis=1)
+        if count_matches.max() >= 11:
+          point_index, rotation_index = np.unravel_index(
+              count_matches.argmax(), count_matches.shape)
+          offset_points = offset_scans[point_index, :, rotation_index]
+          offset = aligned_point - t[point_index][rotation_index]
+          aligned_points = np.union1d(aligned_points, offset_points)
+          aligned_scanners.add(scanner_index)
+          scanner_positions.append(offset)
+
+  if not part2:
+    return len(aligned_points)
+
+  return max(np.abs(day19_decode_3d(point1 - point2)).sum()
+             for point1, point2 in itertools.combinations(scanner_positions, 2))
+
+
+check_eq(day19c(s1), 79)
+# puzzle.verify(1, day19c)  # ~3.5 s.
+
+day19c_part2 = functools.partial(day19c, part2=True)
+check_eq(day19c_part2(s1), 3621)
+# puzzle.verify(2, day19c_part2)  # ~3.5 s.
+
+# %%
+def day19(s, *, part2=False):  # Fast.
   scanners = []  # 33 scanners, each seeing 25-27 points.
   for i, s2 in enumerate(s.strip().split('\n\n')):
     lines = s2.split('\n')
@@ -2914,169 +3068,12 @@ def day19a(s, *, part2=False):  # Fast.
              for t1, t2 in itertools.combinations(final_transforms, 2))
 
 
-check_eq(day19a(s1), 79)
-puzzle.verify(1, day19a)  # ~120 ms.
-
-day19a_part2 = functools.partial(day19a, part2=True)
-check_eq(day19a_part2(s1), 3621)
-puzzle.verify(2, day19a_part2)  # ~120 ms.
-
-
-# %%
-def day19b(s, *, part2=False):  # Brute-force approach.
-  # https://github.com/shaeberling/euler/blob/master/kotlin/src/com/s13g/aoc/aoc2021/Day19.kt
-  scanners = [
-    {tuple(map(int, line.split(','))) for line in s2.split('\n')[1:]}
-    for s2 in s.strip().split('\n\n')
-  ]
-  ROTATIONS = tuple(
-      np.array(rows)
-      for diag in itertools.product([-1, 1], repeat=3)
-      for rows in itertools.permutations(np.diag(diag))
-      if np.linalg.det(rows) > 0
-  )
-  rotated_scans = [
-      [{tuple(rotation @ point) for point in scanner} for rotation in ROTATIONS]
-      for scanner in scanners
-  ]
-  aligned_points = scanners[0]
-  aligned_scanners = {0}
-  scanner_positions = []
-
-  while len(aligned_scanners) < len(scanners):
-    for aligned_point in tuple(aligned_points):
-      for scanner_index in range(len(scanners)):
-        if scanner_index not in aligned_scanners:
-          for rotated_scan in rotated_scans[scanner_index]:
-            for point0 in rotated_scan:
-              offset = np.array(aligned_point) - point0
-              o = tuple(offset)
-              count_matches = sum(  # (Optimized "point + offset".)
-                  (p[0] + o[0], p[1] + o[1], p[2] + o[2]) in aligned_points
-                  for p in rotated_scan)
-              if count_matches >= 11:
-                aligned_points.update(
-                    tuple(point + offset) for point in rotated_scan)
-                aligned_scanners.add(scanner_index)
-                scanner_positions.append(offset)
-                break
-
-  if not part2:
-    return len(aligned_points)
-
-  return max(abs(point1 - point2).sum()
-             for point1, point2 in itertools.combinations(scanner_positions, 2))
-
-
-check_eq(day19b(s1), 79)
-# puzzle.verify(1, day19b)  # ~35 s.
-
-day19b_part2 = functools.partial(day19b, part2=True)
-check_eq(day19b_part2(s1), 3621)
-# puzzle.verify(2, day19b_part2)  # ~35 s.
-
-# %%
-def day19c(s, *, part2=False):  # Brute-force; encode 3D point/vector as integer.
-  scanners = [
-    np.array([list(map(int, line.split(','))) for line in s2.split('\n')[1:]])
-    for s2 in s.strip().split('\n\n')
-  ]
-  ROTATIONS = tuple(
-      np.array(rows)
-      for diag in itertools.product([-1, 1], repeat=3)
-      for rows in itertools.permutations(np.diag(diag))
-      if np.linalg.det(rows) > 0
-  )
-  rotated_scans = [
-      [set(day19_encode_3d(np.tensordot(rotation, scanner, (1, 1)).T))
-       for rotation in ROTATIONS]
-      for scanner in scanners
-  ]
-  aligned_points = rotated_scans[0][0]
-  aligned_scanners = {0}
-  scanner_positions = []
-
-  while len(aligned_scanners) < len(scanners):
-    for aligned_point in tuple(aligned_points):
-      for scanner_index in range(len(scanners)):
-        if scanner_index not in aligned_scanners:
-          for rotated_scan in rotated_scans[scanner_index]:
-            for point0 in rotated_scan:
-              offset = aligned_point - point0  # (3-vector encoded in an int64)
-              count_matches = sum(point + offset in aligned_points
-                                  for point in rotated_scan)
-              if count_matches >= 11:
-                aligned_points.update(point + offset for point in rotated_scan)
-                aligned_scanners.add(scanner_index)
-                scanner_positions.append(offset)
-                break
-
-  if not part2:
-    return len(aligned_points)
-
-  return max(np.abs(day19_decode_3d(point1 - point2)).sum()
-             for point1, point2 in itertools.combinations(scanner_positions, 2))
-
-
-check_eq(day19c(s1), 79)
-# puzzle.verify(1, day19c)  # ~11.5 s
-
-day19c_part2 = functools.partial(day19c, part2=True)
-check_eq(day19c_part2(s1), 3621)
-# puzzle.verify(2, day19c_part2)  # ~11.6 s
-
-# %%
-def day19(s, *, part2=False):  # Brute-force np.isin() with encoded points.
-  scanners = [
-    np.array([list(map(int, line.split(','))) for line in s2.split('\n')[1:]])
-    for s2 in s.strip().split('\n\n')
-  ]
-  ROTATIONS = tuple(
-      np.array(rows)
-      for diag in itertools.product([-1, 1], repeat=3)
-      for rows in itertools.permutations(np.diag(diag))
-      if np.linalg.det(rows) > 0
-  )
-  rotated_scans = [
-      np.sort([day19_encode_3d(np.tensordot(rotation, scanner, (1, 1)).T)
-               for rotation in ROTATIONS], axis=-1)
-      for scanner in scanners
-  ]
-  aligned_points = rotated_scans[0][0]
-  aligned_scanners = {0}
-  scanner_positions = []
-
-  while len(aligned_scanners) < len(scanners):
-    for aligned_point in tuple(aligned_points):
-      for scanner_index in range(len(scanners)):
-        if scanner_index in aligned_scanners:
-          continue
-        t = rotated_scans[scanner_index].T  # [point_index][rot_index]
-        offset_scans = t + (aligned_point - t[:, None])
-        count_matches = np.isin(
-            offset_scans, aligned_points, assume_unique=True).sum(axis=1)
-        if count_matches.max() >= 11:
-          point_index, rotation_index = np.unravel_index(
-              count_matches.argmax(), count_matches.shape)
-          offset_points = offset_scans[point_index, :, rotation_index]
-          offset = aligned_point - t[point_index][rotation_index]
-          aligned_points = np.union1d(aligned_points, offset_points)
-          aligned_scanners.add(scanner_index)
-          scanner_positions.append(offset)
-
-  if not part2:
-    return len(aligned_points)
-
-  return max(np.abs(day19_decode_3d(point1 - point2)).sum()
-             for point1, point2 in itertools.combinations(scanner_positions, 2))
-
-
 check_eq(day19(s1), 79)
-# puzzle.verify(1, day19)  # ~3.5 s.
+puzzle.verify(1, day19)  # ~120 ms.
 
 day19_part2 = functools.partial(day19, part2=True)
 check_eq(day19_part2(s1), 3621)
-# puzzle.verify(2, day19_part2)  # ~3.5 s.
+puzzle.verify(2, day19_part2)  # ~120 ms.
 
 # %% [markdown]
 # <a name="day20"></a>
@@ -3171,8 +3168,8 @@ def day20b(s, *, part2=False):  # Most compact and fast.
     outside_value = 0 if not lookup[0] else cycle % 2
     grid = np.pad(grid, 2, constant_values=outside_value)
     dyxs = itertools.product([-1, 0, 1], repeat=2)
-    neighb = [np.roll(grid, dyx, (0, 1))[1:-1, 1:-1] for dyx in dyxs]
-    grid = lookup[np.tensordot(neighb, 2**np.arange(9), (0, 0))]
+    neighbors = [np.roll(grid, dyx, (0, 1))[1:-1, 1:-1] for dyx in dyxs]
+    grid = lookup[np.tensordot(neighbors, 2**np.arange(9), (0, 0))]
 
   return grid.sum()
 
@@ -3199,8 +3196,8 @@ def day20(s, *, part2=False, visualize=False):  # Same with visualization.
     outside_value = 0 if not lookup[0] else cycle % 2
     grid = np.pad(grid, 2, constant_values=outside_value)
     dyxs = itertools.product([-1, 0, 1], repeat=2)
-    neighb = [np.roll(grid, dyx, (0, 1))[1:-1, 1:-1] for dyx in dyxs]
-    grid = lookup[np.moveaxis(np.array(neighb), 0, -1).dot(2**np.arange(9))]
+    neighbors = [np.roll(grid, dyx, (0, 1))[1:-1, 1:-1] for dyx in dyxs]
+    grid = lookup[np.moveaxis(np.array(neighbors), 0, -1).dot(2**np.arange(9))]
     if visualize and cycle % 2 == 0:
       images.append(np.pad(grid, num_cycles - cycle, constant_values=not outside_value))
 
@@ -4059,7 +4056,7 @@ puzzle.verify(2, day22e_part2)  # ~330 ms vs. previous ~380 ms.
 # It looks like the overhead of maintaining the Kdtree is too great.
 
 # %%
-def day22(s, *, part2=False):  # Mangled numba version; fastest.
+def day22(s, *, part2=False):  # Mangled numba version of day22d; fastest.
   lines = s.strip('\n').split('\n')
   states, cuboids = [], []
   for line in lines:
@@ -4171,7 +4168,7 @@ puzzle.verify(2, day22_part2)  # ~80 ms (often slower).
 # %% [markdown]
 # - Part 1: What is the least energy required to organize the amphipods?
 #
-# - Part 2: Afer inserting two more lines to make rooms twice as large, what is the least energy?
+# - Part 2: After inserting two more lines to make rooms twice as large, what is the least energy?
 #
 # ---
 #
