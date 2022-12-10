@@ -142,7 +142,7 @@ _ORIGINAL_GLOBALS = list(globals())
 puzzle = advent.puzzle(day=1)
 
 # %%
-s1 = """
+s1 = """\
 199
 200
 208
@@ -158,7 +158,7 @@ s1 = """
 
 # %%
 def day1a(s, *, part2=False):  # Solution based on generators.
-  sequence: Iterable[int] = map(int, s.strip().split('\n'))
+  sequence: Iterable[int] = map(int, s.splitlines())
   if part2:
     sequence = (sum(window) for window in hh.sliding_window(sequence, 3))
   return sum(a < b for a, b in hh.sliding_window(sequence, 2))
@@ -174,7 +174,7 @@ puzzle.verify(2, day1a_part2)  # ~2 ms.
 
 # %%
 def day1(s, *, part2=False):  # Solution using numpy; fastest.
-  sequence = np.array(list(map(int, s.strip('\n').split('\n'))))
+  sequence = np.array(list(map(int, s.splitlines())))
   if part2:
     sequence = np.convolve(sequence, [1, 1, 1], mode='valid')
   return np.count_nonzero(np.diff(sequence) > 0)
@@ -200,7 +200,7 @@ puzzle.verify(2, day1_part2)  # ~1 ms.
 puzzle = advent.puzzle(day=2)
 
 # %%
-s1 = """
+s1 = """\
 forward 5
 down 5
 forward 8
@@ -213,7 +213,7 @@ forward 2
 # %%
 def day2_part1(s):
   y, x = 0, 0
-  for line in s.strip('\n').split('\n'):
+  for line in s.splitlines():
     command, value = line.split(' ')
     value = int(value)
     if command == 'forward':
@@ -233,7 +233,7 @@ puzzle.verify(1, day2_part1)  # ~1 ms.
 # %%
 def day2_part2(s):
   y, x, aim = 0, 0, 0
-  for line in s.strip('\n').split('\n'):
+  for line in s.splitlines():
     command, value = line.split(' ')
     value = int(value)
     if command == 'forward':
@@ -263,7 +263,7 @@ puzzle.verify(2, day2_part2)  # ~1 ms.
 puzzle = advent.puzzle(day=3)
 
 # %%
-s1 = """
+s1 = """\
 00100
 11110
 10110
@@ -281,7 +281,7 @@ s1 = """
 
 # %%
 def day3(s, *, part2=False):
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
 
   def most_and_least_common(lines):
     grid = np.array([[int(ch) for ch in line] for line in lines])
@@ -335,7 +335,7 @@ puzzle.verify(2, day3_part2)  # ~22 ms.
 puzzle = advent.puzzle(day=4)
 
 # %%
-s1 = """
+s1 = """\
 7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
 
 22 13 17 11  0
@@ -360,9 +360,9 @@ s1 = """
 
 # %%
 def day4a(s, *, part2=False):  # Compact.
-  sections = s.strip().split('\n\n')
+  sections = s.strip('\n').split('\n\n')
   boards = np.array([
-      [[int(n) for n in line.split()] for line in t.split('\n')]
+      [[int(n) for n in line.split()] for line in t.splitlines()]
       for t in sections[1:]
   ])
   matches = boards < 0
@@ -392,7 +392,7 @@ def day4(s, *, part2=False):  # More readable.
   sections = s.strip('\n').split('\n\n')
   numbers = list(map(int, sections[0].split(',')))
   boards = np.array([
-      [[int(n) for n in line.split()] for line in t.split('\n')]
+      [[int(n) for n in line.split()] for line in t.splitlines()]
       for t in sections[1:]
   ])
   matches = np.full(boards.shape, False)
@@ -439,7 +439,7 @@ puzzle.verify(2, day4_part2)  # ~10 ms.
 puzzle = advent.puzzle(day=5)
 
 # %%
-s1 = """
+s1 = """\
 0,9 -> 5,9
 8,0 -> 0,8
 9,4 -> 3,4
@@ -456,7 +456,7 @@ s1 = """
 # %%
 def day5a(s, *, part2=False):  # Compact but slow; supports any dimension.
   count: collections.Counter[tuple[int, int]] = collections.Counter()
-  for line in s.strip().split('\n'):
+  for line in s.splitlines():
     p, q = (np.array(list(map(int, t.split(',')))) for t in line.split(' -> '))
     if part2 or any(p == q):
       d = np.sign(q - p)
@@ -477,7 +477,7 @@ puzzle.verify(2, day5a_part2)  # ~800 ms.
 # %%
 def day5b(s, *, part2=False):  # Faster, still with dict.
   count: collections.defaultdict[tuple[int, int], int] = collections.defaultdict(int)
-  for line in s.strip().split('\n'):
+  for line in s.splitlines():
     pattern = r'^(\d+),(\d+) -> (\d+),(\d+)$'
     x1, y1, x2, y2 = map(int, hh.re_groups(pattern, line))
     dx, dy = x2 - x1, y2 - y1
@@ -510,7 +510,7 @@ def day5c(s, *, part2=False, size=1000):  # All numpy; clever diagonal slicing.
   def f(a, b, op=slice):
     return op(a, b + 1) if a < b else op(a, b - 1, -1)
 
-  for line in s.strip().split('\n'):
+  for line in s.splitlines():
     pattern = r'^(\d+),(\d+) -> (\d+),(\d+)$'
     x1, y1, x2, y2 = map(int, hh.re_groups(pattern, line))
     if y1 == y2:
@@ -543,7 +543,7 @@ def day5(s, *, part2=False, size=1000, visualize=False):  # Just as fast.
   def f(a, b, op=slice):
     return op(a, b + 1) if a < b else op(a, b - 1, -1)
 
-  for line in s.strip().split('\n'):
+  for line in s.splitlines():
     pattern = r'^(\d+),(\d+) -> (\d+),(\d+)$'
     x1, y1, x2, y2 = map(int, hh.re_groups(pattern, line))
     if y1 == y2:
@@ -590,7 +590,7 @@ media.set_max_output_height(3000)
 puzzle = advent.puzzle(day=6)
 
 # %%
-s1 = """3,4,3,1,2"""
+s1 = '3,4,3,1,2'
 
 
 # %%
@@ -674,7 +674,7 @@ if 0:
 puzzle = advent.puzzle(day=7)
 
 # %%
-s1 = """16,1,2,0,4,2,7,1,2,14"""
+s1 = '16,1,2,0,4,2,7,1,2,14'
 
 
 # %%
@@ -742,7 +742,7 @@ puzzle.verify(2, day7_part2)  # ~1 ms.
 puzzle = advent.puzzle(day=8)
 
 # %%
-s1 = """
+s1 = """\
 be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
 edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc
 fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef | cg cg fdcagb cbg
@@ -763,7 +763,7 @@ print(len(list(itertools.permutations('abcdefg'))))
 # %%
 def day8a_part1(s):
   total = 0
-  for line in s.strip('\n').split('\n'):
+  for line in s.splitlines():
     _, outputs = map(str.split, line.split(' | '))
     total += sum(len(output) in [2, 3, 4, 7] for output in outputs)
   return total
@@ -771,7 +771,7 @@ def day8a_part1(s):
 check_eq(day8a_part1(s1), 26)
 
 def day8_part1(s):
-  return sum(len(output) in [2, 3, 4, 7] for line in s.strip('\n').split('\n')
+  return sum(len(output) in [2, 3, 4, 7] for line in s.splitlines()
              for output in line.split(' | ')[1].split())
 
 check_eq(day8_part1(s1), 26)
@@ -785,7 +785,7 @@ def day8a_part2(s):  # Brute-force; most compact.
             'abcdefg': '8', 'abcdfg': '9'}
   total = 0
 
-  for line in s.strip('\n').split('\n'):
+  for line in s.splitlines():
     inputs, outputs = map(str.split, line.split(' | '))
     for permutation in itertools.permutations('abcdefg'):
       translation = str.maketrans('abcdefg', ''.join(permutation))
@@ -817,7 +817,7 @@ def day8b_part2(s):  # Faster; cache a translation table for each permutation.
     translation = str.maketrans('abcdefg', ''.join(permutation))
     return lambda segs: lookup.get(frozenset(segs.translate(translation)), None)
 
-  for line in s.strip('\n').split('\n'):
+  for line in s.splitlines():
     inputs, outputs = map(str.split, line.split(' | '))
     inputs.sort(key=len)  # Optional, for speedup.
     for permutation in itertools.permutations('abcdefg'):
@@ -838,7 +838,7 @@ puzzle.verify(2, day8b_part2)  # ~810 ms.
 def day8c_part2(s):  # Faster; loop over permutations first, then lines.
   lookup = {'abcefg': 0, 'cf': 1, 'acdeg': 2, 'acdfg': 3, 'bcdf': 4,
             'abdfg': 5, 'abdefg': 6, 'acf': 7, 'abcdefg': 8, 'abcdfg': 9}
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   ins0, outs0 = zip(*(map(str.split, line.split(' | ')) for line in lines))
   ins = [[frozenset(input) for input in inputs] for inputs in ins0]
   outs = list(outs0)
@@ -869,7 +869,7 @@ def day8d_part2(s):  # Faster; precompute seg sets for each permutation.
             for permutation in itertools.permutations('abcdefg')}
   total = 0
 
-  for line in s.strip('\n').split('\n'):
+  for line in s.splitlines():
     inputs0, outputs = map(str.split, line.split(' | '))
     inputs = frozenset(frozenset(input) for input in inputs0)
     for permutation, valid in valids.items():
@@ -894,7 +894,7 @@ def day8e_part2(s):  # Faster; loop over permutations first, and use sets of lin
             'abdfg': 5, 'abdefg': 6, 'acf': 7, 'abcdefg': 8, 'abcdfg': 9}
   lines = {(frozenset(frozenset(input) for input in inputs),
             tuple(frozenset(output) for output in outputs))
-           for line in s.strip('\n').split('\n')
+           for line in s.splitlines()
            for inputs, outputs in [map(str.split, line.split(' | '))]}
   total = 0
 
@@ -935,7 +935,7 @@ def day8_part2(s):  # Fastest; custom solution for the 7-segment LED.
       (5, 5, lambda e: True),
   ]
 
-  for line in s.strip('\n').split('\n'):
+  for line in s.splitlines():
     inputs0, outputs = map(str.split, line.split(' | '))
     inputs = set(frozenset(input) for input in inputs0)
     segs_from_digit.clear()
@@ -984,7 +984,7 @@ puzzle.verify(2, day8_part2)  # ~5 ms.
 puzzle = advent.puzzle(day=9)
 
 # %%
-s1 = """
+s1 = """\
 2199943210
 3987894921
 9856789892
@@ -995,7 +995,7 @@ s1 = """
 
 # %%
 def day9a(s, *, part2=False):  # Solution using Union-Find.  Relatively slow.
-  grid = np.array([list(line) for line in s.strip().split('\n')]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
   dyxs = np.array([(0, -1), (0, 1), (-1, 0), (1, 0)])
   t = np.pad(grid, 1, constant_values=10)
   neighbors = np.array([np.roll(t, -dyx, (0, 1))[1:-1, 1:-1] for dyx in dyxs])
@@ -1029,7 +1029,7 @@ puzzle.verify(2, day9a_part2)  # ~110 ms.
 
 # %%
 def day9b(s, *, part2=False, visualize=False):  # Faster using numpy.
-  grid = np.array([list(line) for line in s.strip().split('\n')]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
   dyxs = np.concatenate([[v, -v] for v in np.eye(grid.ndim, dtype=int)])
   t = np.pad(grid, 1, constant_values=10)
   neighbors = np.array([np.roll(t, -dyx, (0, 1))[1:-1, 1:-1] for dyx in dyxs])
@@ -1070,7 +1070,7 @@ puzzle.verify(2, day9b_part2)  # ~15 ms.
 
 # %%
 def day9(s, *, part2=False, visualize=False):  # Faster, using flat indexing.
-  grid = np.array([[int(c) for c in line] for line in s.strip().split('\n')])
+  grid = np.array([[int(c) for c in line] for line in s.splitlines()])
   dyxs = np.concatenate([[v, -v] for v in np.eye(grid.ndim, dtype=int)])
   t = np.pad(grid, 1, constant_values=10)
   neighbors = np.array([np.roll(t, -dyx, (0, 1))[1:-1, 1:-1] for dyx in dyxs])
@@ -1139,7 +1139,7 @@ _ = day9_part2(puzzle.input, visualize=True)
 puzzle = advent.puzzle(day=10)
 
 # %%
-s1 = """
+s1 = """\
 [({(<(())[]>[[{[]{<()<>>
 [(()[<>])]({[<{<<[]>>(
 {([(<{}[<>[]}>{[]{[(<()>
@@ -1157,7 +1157,7 @@ s1 = """
 def day10_part1(s):
   open_from_close = {')': '(', ']': '[', '}': '{', '>': '<'}
   total = 0
-  for line in s.strip('\n').split('\n'):
+  for line in s.splitlines():
     stack = []
     for ch in line:
       if ch in '([{<':
@@ -1175,7 +1175,7 @@ puzzle.verify(1, day10_part1)  # ~2 ms.
 def day10_part2(s):
   open_from_close = {')': '(', ']': '[', '}': '{', '>': '<'}
   scores = []
-  for line in s.strip('\n').split('\n'):
+  for line in s.splitlines():
     stack = []
     for ch in line:
       if ch in '([{<':
@@ -1222,7 +1222,7 @@ puzzle.verify(2, day10_part2)  # ~3 ms.
 puzzle = advent.puzzle(day=11)
 
 # %%
-s1 = """
+s1 = """\
 5483143223
 2745854711
 5264556173
@@ -1238,7 +1238,7 @@ s1 = """
 
 # %%
 def day11a(s, *, part2=False):  # Compact.
-  grid = np.array([list(line) for line in s.strip().split('\n')]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
   total = 0
 
   for step in itertools.count(1):
@@ -1272,7 +1272,7 @@ puzzle.verify(2, day11a_part2)  # ~225 ms.
 
 # %%
 def day11b(s, *, part2=False):  # Faster, using ndenumerate and bool array.
-  grid = np.array([list(line) for line in s.strip().split('\n')]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
   dyxs = set(itertools.product((-1, 0, 1), repeat=2)) - {(0, 0)}
   height, width = grid.shape
   total = 0
@@ -1309,7 +1309,7 @@ puzzle.verify(2, day11b_part2)  # ~30 ms.
 
 # %%
 def day11(s, *, part2=False, visualize=False):  # Fastest, using flat array.
-  grid0 = np.array([list(line) for line in s.strip().split('\n')]).astype(int)
+  grid0 = np.array([list(line) for line in s.splitlines()]).astype(int)
   height, width = grid0.shape
   grid = grid0.ravel()
   dyxs = set(itertools.product((-1, 0, 1), repeat=2)) - {(0, 0)}
@@ -1386,7 +1386,7 @@ _ = day11_part2(puzzle.input, visualize=True)
 puzzle = advent.puzzle(day=12)
 
 # %%
-s1 = """
+s1 = """\
 start-A
 start-b
 A-c
@@ -1396,7 +1396,7 @@ A-end
 b-end
 """
 
-s2 = """
+s2 = """\
 fs-end
 he-DX
 fs-he
@@ -1421,7 +1421,7 @@ start-RW
 # %%
 def day12a(s, *, part2=False):  # Clean solution.
   graph = collections.defaultdict(list)
-  for line in s.strip('\n').split('\n'):
+  for line in s.splitlines():
     a, b = line.split('-')
     graph[a].append(b)
     graph[b].append(a)
@@ -1457,7 +1457,7 @@ puzzle.verify(2, day12a_part2)  # ~440 ms.
 # %%
 def day12(s, *, part2=False):  # Much faster using lru_cache and frozenset.
   graph = collections.defaultdict(list)
-  for line in s.strip('\n').split('\n'):
+  for line in s.splitlines():
     a, b = line.split('-')
     graph[a].append(b)
     graph[b].append(a)
@@ -1513,7 +1513,7 @@ puzzle.verify(2, day12_part2)  # ~1 ms.
 puzzle = advent.puzzle(day=13)
 
 # %%
-s1 = """
+s1 = """\
 6,10
 0,14
 9,10
@@ -1541,9 +1541,9 @@ fold along x=5
 # %%
 def day13a(s, *, part2=False):  # Most compact; set-based.
   chunk1, chunk2 = s.strip('\n').split('\n\n')
-  dots = {tuple(map(int, line.split(','))) for line in chunk1.split('\n')}
+  dots = {tuple(map(int, line.split(','))) for line in chunk1.splitlines()}
 
-  for line in chunk2.split('\n'):
+  for line in chunk2.splitlines():
     axis, value = {'x': 0, 'y': 1}[line[11:12]], int(line[13:])
 
     def fold(xy):
@@ -1569,11 +1569,11 @@ puzzle.verify(2, day13a_part2)  # ~6 ms.  e.g. 'EPLGRULR'.
 # %%
 def day13b(s, *, part2=False, visualize=False):  # More readable; a bit faster.
   chunk1, chunk2 = s.strip('\n').split('\n\n')
-  dots = {tuple(map(int, line.split(',')))[::-1] for line in chunk1.split('\n')}
+  dots = {tuple(map(int, line.split(',')))[::-1] for line in chunk1.splitlines()}
   if visualize:
     all_dots = {(0, *dot) for dot in dots}
 
-  for t, line in enumerate(chunk2.split('\n')):
+  for t, line in enumerate(chunk2.splitlines()):
     axis, value = {'y': 0, 'x': 1}[line[11:12]], int(line[13:])
 
     def reflect(yx):
@@ -1594,7 +1594,8 @@ def day13b(s, *, part2=False, visualize=False):  # More readable; a bit faster.
     media.show_video(video, codec='gif', fps=2)
 
   grid = np.full((6, 39), '.')
-  grid[tuple(np.array(list(dots)).T)] = '#'
+  # grid[tuple(np.array(list(dots)).T)] = '#'
+  grid[tuple(zip(*dots))] = '#'
   return advent_of_code_ocr.convert_6('\n'.join(''.join(row) for row in grid))
 
 
@@ -1610,11 +1611,11 @@ _ = day13b_part2(puzzle.input, visualize=True)
 def day13(s, *, part2=False, visualize=False):  # Numpy approach; as fast.
   chunk1, chunk2 = s.strip('\n').split('\n\n')
   yx = np.array([list(map(int, line.split(',')))[::-1]
-                 for line in chunk1.split('\n')])
+                 for line in chunk1.splitlines()])
   grid = np.zeros(yx.max(axis=0) + 1, dtype=np.uint8)
   grid[tuple(yx.T)] = 1
 
-  for line in chunk2.split('\n'):
+  for line in chunk2.splitlines():
     axis, value = {'y': 0, 'x': 1}[line[11:12]], int(line[13:])
     grid = grid.T if axis else grid
     grid, side2 = grid[:value], grid[value + 1:]
@@ -1657,7 +1658,7 @@ _ = day13_part2(puzzle.input, visualize=True)
 puzzle = advent.puzzle(day=14)
 
 # %%
-s1 = """
+s1 = """\
 NNCB
 
 CH -> B
@@ -1682,7 +1683,7 @@ CN -> C
 # %%
 def day14a(s, *, part2=False):  # Compact.
   Counter = collections.Counter
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   start = lines[0]
   pairs = Counter(start[i:i+2] for i in range(len(start) - 1))
   rules = dict(rule.split(' -> ') for rule in lines[2:])
@@ -1709,7 +1710,7 @@ puzzle.verify(2, day14a_part2)  # ~85 ms.
 
 # %%
 def day14(s, *, part2=False):  # Faster (avoiding inefficient sum()).
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   start = lines[0]
   pairs = collections.Counter(start[i:i+2] for i in range(len(start) - 1))
   rules = dict(line.split(' -> ') for line in lines[2:])
@@ -1768,7 +1769,7 @@ puzzle.verify(2, day14_part2)  # ~4 ms.
 puzzle = advent.puzzle(day=15)
 
 # %%
-s1 = """
+s1 = """\
 1163751742
 1381373672
 2136511328
@@ -1784,7 +1785,7 @@ s1 = """
 
 # %%
 def day15a(s, *, part2=False):  # Compact.
-  grid = np.array([list(line) for line in s.strip().split('\n')]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
   if part2:
     grid = np.concatenate([
         np.concatenate([(grid + (y + x - 1)) % 9 + 1 for x in range(5)], axis=1)
@@ -1816,7 +1817,7 @@ puzzle.verify(2, day15a_part2)  # ~1700 ms.
 
 # %%
 def day15b(s, *, part2=False):  # Try A* search.
-  grid = np.array([list(line) for line in s.strip().split('\n')]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
   if part2:
     grid = np.concatenate([
         np.concatenate([(grid + (y + x - 1)) % 9 + 1 for x in range(5)],
@@ -1866,7 +1867,7 @@ check_eq(day15b_part2(s1), 315)
 
 # %%
 def day15c(s, *, part2=False):  # Fastest: several opposing sweeps, but can fail.
-  grid = np.array([list(line) for line in s.strip().split('\n')]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
   if part2:
     grid = np.concatenate([
         np.concatenate([(grid + (y + x - 1)) % 9 + 1 for x in range(5)], axis=1)
@@ -1911,7 +1912,7 @@ check_eq(day15c_part2(s1), 315)
 
 # %%
 def day15(s, *, part2=False, visualize=False):  # padded, numba, visualization.
-  grid = np.array([list(line) for line in s.strip().split('\n')]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
   if part2:
     grid = np.concatenate([
         np.concatenate([(grid + (y + x - 1)) % 9 + 1 for x in range(5)], axis=1)
@@ -2168,8 +2169,8 @@ if 0:
 puzzle = advent.puzzle(day=17)
 
 # %%
-s1 = """target area: x=20..30, y=-10..-5"""
-s2 = """target area: x=-30..-20, y=-10..-5"""  # Try negative x values.
+s1 = 'target area: x=20..30, y=-10..-5'
+s2 = 'target area: x=-30..-20, y=-10..-5'  # Try negative x values.
 
 
 # %%
@@ -2281,12 +2282,12 @@ _ = day17_part2(puzzle.input, visualize=True)
 puzzle = advent.puzzle(day=18)
 
 # %%
-s1 = """
+s1 = """\
 [[[[4,3],4],4],[7,[[8,4],9]]]
 [1,1]
 """
 
-s2 = """
+s2 = """\
 [1,1]
 [2,2]
 [3,3]
@@ -2294,7 +2295,7 @@ s2 = """
 [5,5]
 """
 
-s3 = """
+s3 = """\
 [1,1]
 [2,2]
 [3,3]
@@ -2303,7 +2304,7 @@ s3 = """
 [6,6]
 """
 
-s4 = """
+s4 = """\
 [[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
 [7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
 [[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]
@@ -2316,7 +2317,7 @@ s4 = """
 [[[[4,2],2],6],[8,7]]
 """
 
-s5 = """
+s5 = """\
 [[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
 [[[5,[2,8]],4],[5,[[9,9],0]]]
 [6,[[[6,2],[5,6]],[[7,6],[4,7]]]]
@@ -2396,7 +2397,7 @@ def day18a(s, *, part2=False, return_snail=False):  # Using List-based tree.
     return (snail if isinstance(snail, int) else
             3 * magnitude(snail[0]) + 2 * magnitude(snail[1]))
 
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   snails = [parse_snail(line) for line in lines]
 
   if not part2:
@@ -2482,7 +2483,7 @@ def day18b(s, *, part2=False, return_snail=False):  # Explode all in the same pa
     return (snail if isinstance(snail, int) else
             3 * magnitude(snail[0]) + 2 * magnitude(snail[1]))
 
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   snails = [parse_snail(line) for line in lines]
 
   if not part2:
@@ -2600,7 +2601,7 @@ def day18(s, *, part2=False, return_snail=False):
   def add_snails(snail1, snail2):
     return np.concatenate((np.array([-1]), snail1, snail2, np.array([-2])))
 
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   snails = [parse_snail(line) for line in lines]
 
   if not part2:
@@ -2657,7 +2658,7 @@ if 'numba' in globals():
 puzzle = advent.puzzle(day=19)
 
 # %%
-s1 = """
+s1 = """\
 --- scanner 0 ---
 404,-588,-901
 528,-643,409
@@ -2801,8 +2802,8 @@ s1 = """
 def day19a(s, *, part2=False):  # Brute-force approach.
   # https://github.com/shaeberling/euler/blob/master/kotlin/src/com/s13g/aoc/aoc2021/Day19.kt
   scanners = [
-    {tuple(map(int, line.split(','))) for line in s2.split('\n')[1:]}
-    for s2 in s.strip().split('\n\n')
+    {tuple(map(int, line.split(','))) for line in s2.splitlines()[1:]}
+    for s2 in s.strip('\n').split('\n\n')
   ]
   ROTATIONS = tuple(
       np.array(rows)
@@ -2869,8 +2870,8 @@ def day19_decode_3d(value):
 # %%
 def day19b(s, *, part2=False):  # Brute-force; encode 3D point/vector as integer.
   scanners = [
-    np.array([list(map(int, line.split(','))) for line in s2.split('\n')[1:]])
-    for s2 in s.strip().split('\n\n')
+    np.array([list(map(int, line.split(','))) for line in s2.splitlines()[1:]])
+    for s2 in s.strip('\n').split('\n\n')
   ]
   ROTATIONS = tuple(
       np.array(rows)
@@ -2919,8 +2920,8 @@ check_eq(day19b_part2(s1), 3621)
 # %%
 def day19c(s, *, part2=False):  # Brute-force np.isin() with encoded points.
   scanners = [
-    np.array([list(map(int, line.split(','))) for line in s2.split('\n')[1:]])
-    for s2 in s.strip().split('\n\n')
+    np.array([list(map(int, line.split(','))) for line in s2.splitlines()[1:]])
+    for s2 in s.strip('\n').split('\n\n')
   ]
   ROTATIONS = tuple(
       np.array(rows)
@@ -2972,8 +2973,8 @@ check_eq(day19c_part2(s1), 3621)
 # %%
 def day19(s, *, part2=False):  # Fast.
   scanners = []  # 33 scanners, each seeing 25-27 points.
-  for i, s2 in enumerate(s.strip().split('\n\n')):
-    lines = s2.split('\n')
+  for i, s2 in enumerate(s.strip('\n').split('\n\n')):
+    lines = s2.splitlines()
     array = np.array([list(map(int, line.split(','))) for line in lines[1:]])
     scanners.append(array)
 
@@ -3116,7 +3117,7 @@ puzzle.verify(2, day19_part2)  # ~120 ms.
 puzzle = advent.puzzle(day=20)
 
 # %%
-s1 = """
+s1 = """\
 ..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....#..#..##..###..######.###...####..#..#####..##..#.#####...##.#.#..#.##..#.#......#.###.######.###.####...#.##.##..#..#..#####.....#.#....###..#.##......#.....#..#..#..##..#...##.######.####.####.#.#...#.......#..#.#.#...####.##.#......#..#...##.#.##..#...##.#.##..###.#......#.#.......#.#.#.####.###.##...#.....####.#..#..#.##.#....##..#.####....##...##..#...#......#.#.......#.......##..####..#...#.#.#...##..#.#..###..#####........#..####......#..#
 
 #..#.
@@ -3129,7 +3130,7 @@ s1 = """
 
 # %%
 def day20a(s, *, part2=False):  # Slow.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   table = np.array(list(lines[0])) == '#'
   grid = np.array([[c == '#' for c in line] for line in lines[2:]])
   num_cycles = 50 if part2 else 2
@@ -3160,7 +3161,7 @@ check_eq(day20a_part2(s1), 3351)
 
 # %%
 def day20b(s, *, part2=False):  # Most compact and fast.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   lookup = np.array(list(lines[0])) == '#'
   grid = np.array([list(line) for line in lines[2:]]) == '#'
 
@@ -3183,7 +3184,7 @@ puzzle.verify(2, day20b_part2)  # ~66 ms.
 
 # %%
 def day20(s, *, part2=False, visualize=False):  # Same with visualization.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   lookup = np.array(list(lines[0])) == '#'
   grid = np.array([list(line) for line in lines[2:]]) == '#'
   num_cycles = 50 if part2 else 2
@@ -3252,7 +3253,7 @@ _ = day20_part2(puzzle.input, visualize=True)
 puzzle = advent.puzzle(day=21)
 
 # %%
-s1 = """
+s1 = """\
 Player 1 starting position: 4
 Player 2 starting position: 8
 """
@@ -3260,7 +3261,7 @@ Player 2 starting position: 8
 
 # %%
 def day21_part1(s):
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   pos = [int(lines[0][27:]), int(lines[1][27:])]
   dice = itertools.cycle(range(1, 101))
   score = [0, 0]
@@ -3281,7 +3282,7 @@ puzzle.verify(1, day21_part1)  # ~0 ms.
 
 # %%
 def day21a_part2(s):  # Simple 3 "for" loops and caching.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   pos = [int(lines[0][27:]), int(lines[1][27:])]
 
   @functools.lru_cache(maxsize=None)
@@ -3309,7 +3310,7 @@ puzzle.verify(2, day21a_part2)  # ~240 ms.
 
 # %%
 def day21b_part2(s):  # Avoiding functools.lru_cache().
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   pos = [int(lines[0][27:]), int(lines[1][27:])]
   die_sum_distribution = collections.Counter(
       sum(die) for die in itertools.product([1, 2, 3], repeat=3))
@@ -3337,7 +3338,7 @@ puzzle.verify(2, day21b_part2)  # ~850 ms.
 
 # %%
 def day21c_part2(s):  # Numpy, vectorized on pos1.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   pos = [int(lines[0][27:]), int(lines[1][27:])]
   die_sum_distribution = tuple(collections.Counter(
       sum(die) for die in itertools.product([1, 2, 3], repeat=3)).items())
@@ -3364,7 +3365,7 @@ puzzle.verify(2, day21c_part2)  # ~130 ms.
 
 # %%
 def day21d_part2(s, *, win_score=21, visualize=False):  # Most compact.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   pos0, pos1 = int(lines[0][27:]) - 1, int(lines[1][27:]) - 1
   die_sum_distribution = tuple(collections.Counter(
       sum(die) for die in itertools.product([1, 2, 3], repeat=3)).items())
@@ -3419,7 +3420,7 @@ _ = day21d_part2(puzzle.input, visualize=True)
 
 # %%
 def day21_part2(s):  # Fastest, using numba.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   pos = np.array([int(lines[0][27:]), int(lines[1][27:])]) - 1
   die_sum_distribution = np.array(list(collections.Counter(
       sum(die) for die in itertools.product([1, 2, 3], repeat=3)).items()))
@@ -3490,14 +3491,14 @@ puzzle.verify(2, day21_part2)  # ~21 ms.
 puzzle = advent.puzzle(day=22)
 
 # %%
-s1 = """
+s1 = """\
 on x=10..12,y=10..12,z=10..12
 on x=11..13,y=11..13,z=11..13
 off x=9..11,y=9..11,z=9..11
 on x=10..10,y=10..10,z=10..10
 """
 
-s2 = """
+s2 = """\
 on x=-20..26,y=-36..17,z=-47..7
 on x=-20..33,y=-21..23,z=-26..28
 on x=-22..28,y=-29..23,z=-38..16
@@ -3522,7 +3523,7 @@ on x=-54112..-39298,y=-85059..-49293,z=-27449..7877
 on x=967..23432,y=45373..81175,z=27513..53682
 """
 
-s3 = """
+s3 = """\
 on x=-5..47,y=-31..22,z=-19..33
 on x=-44..5,y=-27..21,z=-14..35
 on x=-49..-1,y=-11..42,z=-10..38
@@ -3588,7 +3589,7 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
 
 # %%
 def day22a_part1(s):  # Initial specialized solution for part 1.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   shape = 101, 101, 101
   grid = np.full(shape, 0, dtype=int)
   for line in lines:
@@ -3616,7 +3617,7 @@ puzzle.verify(1, day22a_part1)  # ~42 ms.
 # %%
 def day22b(s, *, part2=False):  # Using 3D grid over unique range coordinates.
   # Approach inspired from https://www.youtube.com/watch?v=YKpViLcTp64.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   states = [l[:3].strip() == 'on' for l in lines]
   boxes = np.array([[list(map(int, range_[2:].split('..')))
                     for range_ in l[3:].strip().split(',')] for l in lines])
@@ -3646,7 +3647,7 @@ puzzle.verify(2, day22b_part2)  # ~2700 ms.
 # %%
 def day22c(s, *, part2=False):  # Using CSG of boxes.
   # Adapted simpler logic of https://github.com/shaeberling/euler/blob/master/kotlin/src/com/s13g/aoc/aoc2021/Day22.kt.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   state_cuboids = []
   for line in lines:
     state = line[:3].strip()
@@ -3703,7 +3704,7 @@ puzzle.verify(2, day22c_part2)  # ~1350 ms.
 
 # %%
 def day22d(s, *, part2=False):  # Faster by reducing CSG fragment count.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   state_cuboids = []
   for line in lines:
     state = line[:3].strip()
@@ -3960,7 +3961,7 @@ test_kdtree()
 
 # %%
 def day22e(s, *, part2=False):  # Using Kdtree.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   state_cuboids = []
   for line in lines:
     state = line[:3].strip()
@@ -4057,7 +4058,7 @@ puzzle.verify(2, day22e_part2)  # ~330 ms vs. previous ~380 ms.
 
 # %%
 def day22(s, *, part2=False):  # Mangled numba version of day22d; fastest.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   states, cuboids = [], []
   for line in lines:
     state = line[:3].strip()
@@ -4186,7 +4187,7 @@ puzzle.verify(2, day22_part2)  # ~80 ms (often slower).
 puzzle = advent.puzzle(day=23)
 
 # %%
-s1 = """
+s1 = """\
 #############
 #...........#
 ###B#C#B#D###
@@ -4197,7 +4198,7 @@ s1 = """
 
 # %%
 def day23a(s, *, part2=False):  # Compact.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   letters = [[line[3], line[5], line[7], line[9]] for line in lines[2:4]]
   if part2:
     letters[1:1] = [list('DCBA'), list('DBAC')]  # Insert two middle rows.
@@ -4273,7 +4274,7 @@ day23a_part2 = functools.partial(day23a, part2=True)
 
 # %%
 def day23b(s, *, part2=False, visualize=False):  # With visualization.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   letters = [[line[3], line[5], line[7], line[9]] for line in lines[2:4]]
   if part2:
     letters[1:1] = [list('DCBA'), list('DBAC')]  # Insert two middle rows.
@@ -4403,7 +4404,7 @@ _ = day23b_part2(puzzle.input, visualize=True)  # ~5.0 s.
 
 # %%
 def day23c(s, *, part2=False):  # Dijkstra or A* search.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   letters = [[line[3], line[5], line[7], line[9]] for line in lines[2:4]]
   if part2:
     letters[1:1] = [list('DCBA'), list('DBAC')]  # Insert two middle rows.
@@ -4508,7 +4509,7 @@ day23c_part2 = functools.partial(day23c, part2=True)
 
 # %%
 def day23(s, *, part2=False):  # Dijkstra/A*, but mangled to support numba.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   letters = [[line[3], line[5], line[7], line[9]] for line in lines[2:4]]
   if part2:
     letters[1:1] = [list('DCBA'), list('DBAC')]  # Insert two middle rows.
@@ -4702,7 +4703,7 @@ puzzle = advent.puzzle(day=24)
 
 # %%
 def day24a(s, *, part2=False, verbose=0):  # Careful, with emulator verification.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
 
   def simulate(input):
     regs = [0] * 4
@@ -4779,7 +4780,7 @@ puzzle.verify(2, day24a_part2)  # ~1 ms.
 
 # %%
 def day24(s, *, part2=False):  # Compact.
-  lines = s.strip('\n').split('\n')
+  lines = s.splitlines()
   a, b, c = [[int(lines[i].split()[-1]) for i in range(m, 253, 18)] for m in (4, 5, 15)]
   solution = [1 if part2 else 9] * 14
   stack = []
@@ -4806,7 +4807,7 @@ puzzle.verify(2, day24_part2)  # ~0 ms.
 
 # %%
 def day24_test1():  # Notice the repeated 18-line blocks; find the block differences:
-  lines = puzzle.input.strip('\n').split('\n')
+  lines = puzzle.input.splitlines()
   for m in range(18):
     print(f'{m} mod 18:')
     set_ = set(line for i, line in enumerate(lines) if i % 18 == m)
@@ -4817,7 +4818,7 @@ day24_test1()
 
 # %%
 def day24_test2():  # Extract the parameters of the 14 code blocks.
-  lines = puzzle.input.strip('\n').split('\n')
+  lines = puzzle.input.splitlines()
   params = {4: 'div z ', 5: 'add x ', 15: 'add y '}
   a, b, c = [[int(lines[i].split()[-1]) for i in range(m, 253, 18)]
              for m in params]
@@ -4979,7 +4980,7 @@ day24_test2()
 puzzle = advent.puzzle(day=25)
 
 # %%
-s1 = """
+s1 = """\
 v...>>.vv>
 .vv>>.vv..
 >>.>v>...v
@@ -4994,7 +4995,7 @@ v.v..>>v.v
 
 # %%
 def day25a(s):  # Compact and reasonably fast.
-  grid = np.array([list(line) for line in s.strip().split('\n')])
+  grid = np.array([list(line) for line in s.splitlines()])
   for step in itertools.count(1):
     moved = False
     for ch, dyx in zip(['>', 'v'], np.array([[0, 1], [1, 0]])):
@@ -5012,7 +5013,7 @@ puzzle.verify(1, day25a)  # ~550 ms.  (419 steps)
 
 # %%
 def day25b(s):  # Same speed when using indices rather than boolean mask.
-  grid = np.array([list(line) for line in s.strip().split('\n')])
+  grid = np.array([list(line) for line in s.splitlines()])
   for step in itertools.count(1):
     moved = False
     for ch, dyx in zip(['>', 'v'], np.array([[0, 1], [1, 0]])):
@@ -5036,7 +5037,7 @@ puzzle.verify(1, day25b)  # ~560 ms.
 
 # %%
 def day25c(s, *, verbose=False, visualize=False):  # With visualization.
-  grid = np.array([list(line) for line in s.strip().split('\n')])
+  grid = np.array([list(line) for line in s.splitlines()])
   images = []
 
   for step in itertools.count(1):
@@ -5068,7 +5069,7 @@ _ = day25c(puzzle.input, visualize=True)  # Slow; ~14 s.
 
 # %%
 def day25(s):  # Fastest: active sets and numba.
-  grid = np.array([list(line) for line in s.strip().split('\n')])
+  grid = np.array([list(line) for line in s.splitlines()])
 
   @numba_njit(cache=True)
   def func(grid):
@@ -5161,24 +5162,6 @@ hh.show_notebook_cell_top_times()
 
 # %% [markdown]
 # # End
-
-# %%
-def dummy_day1(s, *, part2=False):
-  # grid = np.array([[int(c) for c in line] for line in s.strip().split('\n')])
-  for line in s.strip('\n').split('\n'):
-    _ = line
-
-  if part2:
-    pass
-  # return None
-
-# check_eq(day1(s1), 17)
-# puzzle.verify(1, day1)
-
-# day1_part2 = functools.partial(day1, part2=True)
-# check_eq(day1_part2(s1), 18)
-# puzzle.verify(2, day1_part2)
-
 
 # %%
 if 0:  # Original non-numpy versions.
