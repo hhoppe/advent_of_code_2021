@@ -10,7 +10,6 @@ recursive = true
 ignore_missing_imports = true
 strict = false
 check_untyped_defs = true
-# python_version = "3.7"
 
 [tool.pylint.main]
 # See pylint options using "pylint --generate-toml-config"
@@ -29,7 +28,6 @@ reports = false
 score = false
 recursive = true
 ignore-paths = [".ipynb_checkpoints"]
-# py-version = "3.7"
 
 [tool.pylint.basic]
 good-names-rgxs = "^[a-z][a-z0-9]?|[A-Z]([A-Z_]*[A-Z])?$"
