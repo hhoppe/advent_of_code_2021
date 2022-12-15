@@ -507,7 +507,7 @@ puzzle.verify(2, day5b_part2)  # ~180 ms.
 
 # %%
 def day5c(s, *, part2=False, size=1000):  # All numpy; clever diagonal slicing.
-  count = np.zeros((size, size), dtype=int)
+  count = np.zeros((size, size), int)
 
   def f(a, b, op=slice):
     return op(a, b + 1) if a < b else op(a, b - 1, -1)
@@ -540,7 +540,7 @@ puzzle.verify(2, day5c_part2)  # ~9 ms.
 
 # %%
 def day5(s, *, part2=False, size=1000, visualize=False):  # Just as fast.
-  count = np.zeros((size, size), dtype=int)
+  count = np.zeros((size, size), int)
 
   def f(a, b, op=slice):
     return op(a, b + 1) if a < b else op(a, b - 1, -1)
@@ -761,6 +761,7 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
 # Brute-force iteration over all permutations is not excessive:
 if 0:
   print(len(list(itertools.permutations('abcdefg'))))  # 5040
+  print(math.perm(len('abcdefg')))  # 5040
 
 
 # %%
@@ -1615,7 +1616,7 @@ def day13(s, *, part2=False, visualize=False):  # Numpy approach; as fast.
   chunk1, chunk2 = s.split('\n\n')
   yx = np.array([list(map(int, line.split(',')))[::-1]
                  for line in chunk1.splitlines()])
-  grid = np.zeros(yx.max(axis=0) + 1, dtype=np.uint8)
+  grid = np.zeros(yx.max(axis=0) + 1, np.uint8)
   grid[tuple(yx.T)] = 1
 
   for line in chunk2.splitlines():
@@ -1929,7 +1930,7 @@ def day15(s, *, part2=False, visualize=False):  # padded, numba, visualization.
     destination = grid.shape[0] - 2, grid.shape[1] - 2
     distances = np.full(grid.shape, 10**6)
     distances[start] = 0
-    prev = np.empty((*grid.shape, 2), dtype=np.int32)
+    prev = np.empty((*grid.shape, 2), np.int32)
     pq = [(0, start)]
     while pq:
       d, yx = heapq.heappop(pq)
@@ -2218,8 +2219,8 @@ def day17(s, *, part2=False, visualize=False):  # Fast with numba.
     highest = -1000
     winners = []
     # (math.isqrt() not yet supported by numba.)
-    for dx0 in range(int(math.sqrt(x1)) if x1 > 0 else x1,
-                     (-int(math.sqrt(-x2)) if x2 < 0 else x2) + 1):
+    for dx0 in range(int(x1**0.5) if x1 > 0 else x1,
+                     (-int((-x2)**0.5) if x2 < 0 else x2) + 1):
       for dy0 in range(y1, max(abs(y1), abs(y2)) + 1):
         dx, dy = dx0, dy0
         x = y = 0
@@ -2243,8 +2244,7 @@ def day17(s, *, part2=False, visualize=False):  # Fast with numba.
         **{(y, x): (100, 100, 255)
            for y in range(y1, y2 + 1) for x in range(x1, x2 + 1)},
     }
-    image = hh.grid_from_indices(
-        yx_map, background=(250,) * 3, pad=1, dtype=np.uint8)[::-1]
+    image = hh.grid_from_indices(yx_map, background=(250,) * 3, pad=1, dtype=np.uint8)[::-1]
     media.show_image(image, border=True, height=min(image.shape[0] * 2, 500))
   return len(winners) if part2 else highest
 
@@ -2994,7 +2994,7 @@ def day19(s, *, part2=False):  # Fast.
     for scanner in scanners:
       n = len(scanner)  # See https://stackoverflow.com/a/16008578.
       comb = more_itertools.flatten(itertools.combinations(range(n), 2))
-      indices = np.fromiter(comb, dtype=int, count=n * (n - 1))
+      indices = np.fromiter(comb, int, n * (n - 1))
       points = scanner[indices].reshape(-1, 2, 3)
       diff = np.sort(abs(points[:, 1] - points[:, 0]), axis=-1)
       encoded = day19_encode_3d(diff)
@@ -3316,7 +3316,7 @@ def day21b_part2(s):  # Avoiding functools.lru_cache().
   pos = [int(lines[0][27:]), int(lines[1][27:])]
   die_sum_distribution = collections.Counter(
       sum(die) for die in itertools.product([1, 2, 3], repeat=3))
-  wins = np.zeros((21, 21, 10, 10, 2), dtype=np.int64)
+  wins = np.zeros((21, 21, 10, 10, 2), np.int64)
 
   for total_score in range(40, -1, -1):
     for score0 in range(min(20, total_score), max(total_score - 21, -1), -1):
@@ -3345,7 +3345,7 @@ def day21c_part2(s):  # Numpy, vectorized on pos1.
   die_sum_distribution = tuple(collections.Counter(
       sum(die) for die in itertools.product([1, 2, 3], repeat=3)).items())
   # Count of wins for [score0, score1, pos0, pos1, player]
-  wins = np.zeros((21, 21, 10, 10, 2), dtype=np.int64)
+  wins = np.zeros((21, 21, 10, 10, 2), np.int64)
 
   for total_score in range(40, -1, -1):
     for score0 in range(min(20, total_score), max(total_score - 21, -1), -1):
@@ -3430,7 +3430,7 @@ def day21_part2(s):  # Fastest, using numba.
 
   @numba_njit(cache=True)
   def func(pos, die_sum_distribution):
-    wins = np.zeros((21, 21, 10, 10, 2), dtype=np.int64)
+    wins = np.zeros((21, 21, 10, 10, 2), np.int64)
     for total_score in range(40, -1, -1):
       for score0 in range(min(20, total_score), max(total_score - 21, -1), -1):
         score1 = total_score - score0
@@ -3594,7 +3594,7 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
 def day22a_part1(s):  # Initial specialized solution for part 1.
   lines = s.splitlines()
   shape = 101, 101, 101
-  grid = np.full(shape, 0, dtype=int)
+  grid = np.full(shape, 0, int)
   for line in lines:
     state, x1, x2, y1, y2, z1, z2 = parse.parse(
         '{} x={:d}..{:d},y={:d}..{:d},z={:d}..{:d}', line)
@@ -4362,7 +4362,7 @@ def day23b(s, *, part2=False, visualize=False):  # With visualization.
     def make_image(grid, size=12):
       cmap = {' ': (250,) * 3, '.': (240,) * 3, '#': (190,) * 3,
               'A': (180, 0, 0), 'B': (0, 180, 0), 'C': (50, 50, 250), 'D': (250, 120, 0)}
-      return np.array([cmap[e] for e in grid.flat], dtype=np.uint8).reshape(
+      return np.array([cmap[e] for e in grid.flat], np.uint8).reshape(
           *grid.shape, 3).repeat(size, axis=0).repeat(size, axis=1)
 
     def get_pos(i0):
@@ -5059,7 +5059,7 @@ def day25c(s, *, verbose=False, visualize=False):  # With visualization.
 
     if visualize:
       cmap = {'.': (240,) * 3, '>': (180, 0, 0), 'v': (0, 180, 0)}
-      image = np.array([cmap[e] for e in grid.flat], dtype=np.uint8).reshape(
+      image = np.array([cmap[e] for e in grid.flat], np.uint8).reshape(
           *grid.shape, 3).repeat(2, axis=0).repeat(2, axis=1)
       images.append(image)
 
