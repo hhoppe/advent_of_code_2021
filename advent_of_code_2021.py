@@ -92,14 +92,11 @@ INPUT_URL = f'data/{PROFILE}/{{year}}_{{day:02d}}_input.txt'
 ANSWER_URL = f'data/{PROFILE}/{{year}}_{{day:02d}}{{part_letter}}_answer.txt'
 
 # %%
-# (2) If URL not found, we may try adventofcode.com using a session cookie:
+# (2) If URL is not found, we may try adventofcode.com using a session cookie:
 if 0:
-  # See https://github.com/wimglenn/advent-of-code-data.
-  hh.run('rm -f ~/.config/aocd/token*')
-  # Fill-in the session cookie in the following:
-  hh.run(f"if [ '{PROFILE}' = 'google.Hugues_Hoppe.965276' ]; then mkdir -p ~/.config/aocd && echo 53616... >~/.config/aocd/token; fi")
-  hh.run(f"if [ '{PROFILE}' = 'github.hhoppe.1452460' ]; then mkdir -p ~/.config/aocd; echo 53616... >~/.config/aocd/token; fi")
-  hh.run('pip install -q advent-of-code-data')
+  # # !rm -f ~/.config/aocd/token*; mkdir -p ~/.config/aocd; echo 53616... >~/.config/aocd/token
+  # where "53616..." is the session cookie from "adventofcode.com" (valid 1 month).
+  hh.run('pip install -q advent-of-code-data')  # https://github.com/wimglenn/advent-of-code-data
   import aocd  # pylint: disable=unused-import # noqa
 
 # %%
@@ -5066,7 +5063,8 @@ def day25c(s, *, verbose=False, visualize=False):  # With visualization.
     if not moved:
       if visualize:
         images = [images[0]] * 50 + images + [images[-1]] * 50
-        media.show_video(images, codec='gif', fps=50)
+        if 0:  # ~2 MB embedded GIF.
+          media.show_video(images, codec='gif', fps=50)
       return step
 
 
