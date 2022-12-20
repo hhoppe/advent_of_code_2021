@@ -56,6 +56,7 @@ import itertools
 import math
 import sys
 import textwrap
+import types
 import typing
 from typing import Any, Generic, Tuple, TypeVar
 
@@ -102,10 +103,11 @@ if 0:
 # %%
 try:
   import numba
-  numba_njit = numba.njit
 except ModuleNotFoundError:
   print('Package numba is unavailable.')
-  numba_njit = hh.noop_decorator
+  numba = sys.modules['numba'] = types.ModuleType('numba')
+  numba.njit = hh.noop_decorator
+using_numba = hasattr(numba, 'jit')
 
 # %%
 advent = advent_of_code_hhoppe.Advent(year=YEAR, input_url=INPUT_URL, answer_url=ANSWER_URL)
@@ -1867,7 +1869,36 @@ check_eq(day15b_part2(s1), 315)
 # puzzle.verify(2, day15b_part2)  # ~1850 ms.
 
 # %%
-def day15c(s, *, part2=False):  # Fastest: several opposing sweeps, but can fail.
+# Fastest: several opposing sweeps, but can fail.
+
+@numba.njit
+def day15c_func(grid):
+  stride = grid.shape[1]
+  flat = grid.ravel()
+  start = stride + 1
+  destination = flat.size - stride - 2
+  distances = np.full(flat.size, 10**6)
+  distances[start] = 0
+  count = 0
+
+  while True:
+    last_distance = distances[destination]
+    for index in range(start, destination + 1):
+      d = flat[index] + min(distances[index - 1], distances[index - stride])
+      distances[index] = min(distances[index], d)
+
+    # Not a guarantee though.
+    if distances[destination] == last_distance:
+      count += 1
+      if count == 3:  # Hacky.
+        return distances[destination]
+
+    for index in range(destination, start - 1, -1):
+      d = flat[index] + min(distances[index + 1], distances[index + stride])
+      distances[index] = min(distances[index], d)
+
+
+def day15c(s, *, part2=False):
   grid = np.array([list(line) for line in s.splitlines()]).astype(int)
   if part2:
     grid = np.concatenate([
@@ -1875,34 +1906,7 @@ def day15c(s, *, part2=False):  # Fastest: several opposing sweeps, but can fail
         for y in range(5)
     ], axis=0)
   grid = np.pad(grid, 1, constant_values=10**8)  # To avoid boundary checks.
-
-  @numba_njit(cache=True)
-  def func(grid):
-    stride = grid.shape[1]
-    flat = grid.ravel()
-    start = stride + 1
-    destination = flat.size - stride - 2
-    distances = np.full(flat.size, 10**6)
-    distances[start] = 0
-    count = 0
-
-    while True:
-      last_distance = distances[destination]
-      for index in range(start, destination + 1):
-        d = flat[index] + min(distances[index - 1], distances[index - stride])
-        distances[index] = min(distances[index], d)
-
-      # Not a guarantee though.
-      if distances[destination] == last_distance:
-        count += 1
-        if count == 3:  # Hacky.
-          return distances[destination]
-
-      for index in range(destination, start - 1, -1):
-        d = flat[index] + min(distances[index + 1], distances[index + stride])
-        distances[index] = min(distances[index], d)
-
-  return func(grid)
+  return day15c_func(grid)
 
 
 check_eq(day15c(s1), 40)
@@ -1912,7 +1916,39 @@ check_eq(day15c_part2(s1), 315)
 # puzzle.verify(2, day15c_part2)  # ~27 ms.  (Commented because it could fail.)
 
 # %%
-def day15(s, *, part2=False, visualize=False):  # padded, numba, visualization.
+# Padded, numba, visualization.
+
+@numba.njit
+def day15_func(grid, visualize):
+  start = 1, 1
+  destination = grid.shape[0] - 2, grid.shape[1] - 2
+  distances = np.full(grid.shape, 10**6)
+  distances[start] = 0
+  prev = np.empty((*grid.shape, 2), np.int32)
+  pq = [(0, start)]
+  while pq:
+    d, yx = heapq.heappop(pq)
+    # if d > distances[yx]: continue  # Skip finalized.  No change in speed.
+    if yx == destination:
+      path_image = None
+      if visualize:
+        path_image = grid < 0
+        while yx != start:
+          path_image[yx] = True
+          yx = prev[yx][0], prev[yx][1]
+      return d, path_image
+    y, x = yx
+    for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+      yx2 = y + dy, x + dx
+      candidate_d = d + grid[yx2]
+      if candidate_d < distances[yx2]:
+        distances[yx2] = candidate_d
+        heapq.heappush(pq, (candidate_d, yx2))
+        if visualize:
+          prev[yx2] = yx
+
+
+def day15(s, *, part2=False, visualize=False):
   grid = np.array([list(line) for line in s.splitlines()]).astype(int)
   if part2:
     grid = np.concatenate([
@@ -1920,37 +1956,7 @@ def day15(s, *, part2=False, visualize=False):  # padded, numba, visualization.
         for y in range(5)
     ], axis=0)
   grid = np.pad(grid, 1, constant_values=10**8)  # To avoid boundary checks.
-
-  @numba_njit(cache=True)
-  def func(grid):
-    start = 1, 1
-    destination = grid.shape[0] - 2, grid.shape[1] - 2
-    distances = np.full(grid.shape, 10**6)
-    distances[start] = 0
-    prev = np.empty((*grid.shape, 2), np.int32)
-    pq = [(0, start)]
-    while pq:
-      d, yx = heapq.heappop(pq)
-      # if d > distances[yx]: continue  # Skip finalized.  No change in speed.
-      if yx == destination:
-        path_image = None
-        if visualize:
-          path_image = grid < 0
-          while yx != start:
-            path_image[yx] = True
-            yx = prev[yx][0], prev[yx][1]
-        return d, path_image
-      y, x = yx
-      for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-        yx2 = y + dy, x + dx
-        candidate_d = d + grid[yx2]
-        if candidate_d < distances[yx2]:
-          distances[yx2] = candidate_d
-          heapq.heappush(pq, (candidate_d, yx2))
-          if visualize:
-            prev[yx2] = yx
-
-  d, path_image = func(grid)
+  d, path_image = day15_func(grid, visualize)
   if visualize:
     # media.show_image(~path_image, border=True)
     frame0 = media.to_rgb(grid[1:-1, 1:-1] * 1.0, cmap='bwr')
@@ -2207,33 +2213,35 @@ puzzle.verify(2, day17a_part2)  # ~320 ms.
 
 
 # %%
-def day17(s, *, part2=False, visualize=False):  # Fast with numba.
+# Fast with numba.
+
+@numba.jit
+def day17_simulations(x1, x2, y1, y2):
+  highest = -1000
+  winners = []
+  # (math.isqrt() not yet supported by numba.)
+  for dx0 in range(int(x1**0.5) if x1 > 0 else x1,
+                   (-int((-x2)**0.5) if x2 < 0 else x2) + 1):
+    for dy0 in range(y1, max(abs(y1), abs(y2)) + 1):
+      dx, dy = dx0, dy0
+      x = y = 0
+      max_y = 0
+      while ((x <= x2 or dx < 0) and (x >= x1 or dx > 0) and
+             (y >= y1 or dy > 0)):
+        x, y = x + dx, y + dy
+        max_y = max(max_y, y)
+        dx, dy = dx - np.sign(dx), dy - 1
+        if y1 <= y <= y2 and x1 <= x <= x2:
+          winners.append((dy0, dx0))
+          highest = max(highest, max_y)
+          break
+  return winners, highest
+
+
+def day17(s, *, part2=False, visualize=False):
   x1, x2, y1, y2 = parse.parse(
       'target area: x={:d}..{:d}, y={:d}..{:d}', s.strip()).fixed
-
-  @numba_njit(cache=True)
-  def simulations(x1, x2, y1, y2):
-    highest = -1000
-    winners = []
-    # (math.isqrt() not yet supported by numba.)
-    for dx0 in range(int(x1**0.5) if x1 > 0 else x1,
-                     (-int((-x2)**0.5) if x2 < 0 else x2) + 1):
-      for dy0 in range(y1, max(abs(y1), abs(y2)) + 1):
-        dx, dy = dx0, dy0
-        x = y = 0
-        max_y = 0
-        while ((x <= x2 or dx < 0) and (x >= x1 or dx > 0) and
-               (y >= y1 or dy > 0)):
-          x, y = x + dx, y + dy
-          max_y = max(max_y, y)
-          dx, dy = dx - np.sign(dx), dy - 1
-          if y1 <= y <= y2 and x1 <= x <= x2:
-            winners.append((dy0, dx0))
-            highest = max(highest, max_y)
-            break
-    return winners, highest
-
-  winners, highest = simulations(x1, x2, y1, y2)
+  winners, highest = day17_simulations(x1, x2, y1, y2)
   if visualize:
     yx_map = {
         (0, 0): (0, 200, 0),
@@ -2244,6 +2252,7 @@ def day17(s, *, part2=False, visualize=False):  # Fast with numba.
     image = hh.grid_from_indices(yx_map, background=(250,) * 3, pad=1, dtype=np.uint8)[::-1]
     media.show_image(image, border=True, height=min(image.shape[0] * 2, 500))
   return len(winners) if part2 else highest
+
 
 check_eq(day17(s1), 45)
 check_eq(day17(s2), 45)
@@ -2506,12 +2515,77 @@ puzzle.verify(1, day18b)  # ~140 ms.
 
 day18b_part2 = functools.partial(day18b, part2=True)
 check_eq(day18b_part2(s5), 3993)
-if 'numba' not in globals():
+if not using_numba:
   puzzle.verify(2, day18b_part2)  # ~2600 ms.
 
 
 # %%
 # Approach based on 1D arrays, without recursion, to support fast numba.
+
+@numba.njit
+def day18_reduce_snail(snail: np.ndarray) -> np.ndarray:
+
+  def explode_all(snail):
+    depth = 0
+    i = 0
+    while i < len(snail):
+      v = snail[i]
+      if v == -1:
+        if depth < 4:
+          depth += 1
+        else:
+          left, right, close = snail[i + 1: i + 4]
+          assert left >= 0 and right >= 0 and close == -2
+          snail = np.delete(snail, slice(i + 1, i + 4))
+          snail[i] = 0
+          for j in range(i - 1, -1, -1):
+            if snail[j] >= 0:
+              snail[j] += left
+              break
+          for j in range(i + 1, len(snail)):
+            if snail[j] >= 0:
+              snail[j] += right
+              break
+      elif v == -2:
+        depth -= 1
+      i += 1
+    assert depth == 0
+    return snail
+
+  def split_one(snail):
+    for i, value in enumerate(snail):
+      if value >= 10:
+        snail = np.concatenate(
+            (snail[:i], np.array([-1, value // 2, (value + 1) // 2, -2]),
+             snail[i + 1:]))
+        return True, snail
+    return False, snail
+
+  while True:
+    snail = explode_all(snail)
+    done, snail = split_one(snail)
+    if not done:
+      return snail
+
+
+@numba.njit
+def day18_magnitude(snail: np.ndarray) -> int:
+  stack = []
+  for value in snail:
+    if value >= 0:
+      stack.append(value)
+    elif value == -2:
+      right, left = stack.pop(), stack.pop()
+      stack.append(3 * left + 2 * right)
+  assert len(stack) == 1
+  return stack[0]
+
+
+@numba.njit
+def day18_add_snails(snail1, snail2):
+  return np.concatenate((np.array([-1]), snail1, snail2, np.array([-2])))
+
+
 def day18(s, *, part2=False, return_snail=False):
 
   def parse_snail(line):
@@ -2539,77 +2613,17 @@ def day18(s, *, part2=False, return_snail=False):
         stack[-1] += 1
     return ''.join(result)
 
-  @numba_njit(cache=True)
-  def reduce_snail(snail: np.ndarray) -> np.ndarray:
-
-    def explode_all(snail):
-      depth = 0
-      i = 0
-      while i < len(snail):
-        v = snail[i]
-        if v == -1:
-          if depth < 4:
-            depth += 1
-          else:
-            left, right, close = snail[i + 1: i + 4]
-            assert left >= 0 and right >= 0 and close == -2
-            snail = np.delete(snail, slice(i + 1, i + 4))
-            snail[i] = 0
-            for j in range(i - 1, -1, -1):
-              if snail[j] >= 0:
-                snail[j] += left
-                break
-            for j in range(i + 1, len(snail)):
-              if snail[j] >= 0:
-                snail[j] += right
-                break
-        elif v == -2:
-          depth -= 1
-        i += 1
-      assert depth == 0
-      return snail
-
-    def split_one(snail):
-      for i, value in enumerate(snail):
-        if value >= 10:
-          snail = np.concatenate(
-              (snail[:i], np.array([-1, value // 2, (value + 1) // 2, -2]),
-               snail[i + 1:]))
-          return True, snail
-      return False, snail
-
-    while True:
-      snail = explode_all(snail)
-      done, snail = split_one(snail)
-      if not done:
-        return snail
-
-  @numba_njit(cache=True)
-  def magnitude(snail: np.ndarray) -> int:
-    stack = []
-    for value in snail:
-      if value >= 0:
-        stack.append(value)
-      elif value == -2:
-        right, left = stack.pop(), stack.pop()
-        stack.append(3 * left + 2 * right)
-    assert len(stack) == 1
-    return stack[0]
-
-  @numba_njit(cache=True)
-  def add_snails(snail1, snail2):
-    return np.concatenate((np.array([-1]), snail1, snail2, np.array([-2])))
-
   lines = s.splitlines()
   snails = [parse_snail(line) for line in lines]
 
   if not part2:
     snail = functools.reduce(
-        lambda s1, s2: reduce_snail(add_snails(s1, s2)), snails)
-    return format_snail(snail) if return_snail else magnitude(snail)
+        lambda s1, s2: day18_reduce_snail(day18_add_snails(s1, s2)), snails)
+    return format_snail(snail) if return_snail else day18_magnitude(snail)
 
-  return max(magnitude(reduce_snail(add_snails(snail0, snail1)))
+  return max(day18_magnitude(day18_reduce_snail(day18_add_snails(snail0, snail1)))
              for snail0, snail1 in itertools.permutations(snails, 2))
+
 
 day18_parse_reduce = functools.partial(day18, return_snail=True)
 check_eq(day18_parse_reduce(s1), '[[[[0,7],4],[[7,8],[6,0]]],[8,1]]')
@@ -2623,7 +2637,7 @@ puzzle.verify(1, day18)  # ~35 ms with numba; ~600 ms without numba.
 
 day18_part2 = functools.partial(day18, part2=True)
 check_eq(day18_part2(s5), 3993)
-if 'numba' in globals():
+if using_numba:
   puzzle.verify(2, day18_part2)  # ~230 ms with numba; ~9.5 s without numba.
 
 # %% [markdown]
@@ -3419,34 +3433,36 @@ _ = day21d_part2(puzzle.input, visualize=True)
 # _ = day21d_part2(puzzle.input, win_score=100, visualize=True)
 
 # %%
-def day21_part2(s):  # Fastest, using numba.
+# Fastest, using numba.
+
+@numba.njit
+def day21_func(pos, die_sum_distribution):
+  wins = np.zeros((21, 21, 10, 10, 2), np.int64)
+  for total_score in range(40, -1, -1):
+    for score0 in range(min(20, total_score), max(total_score - 21, -1), -1):
+      score1 = total_score - score0
+      for pos0 in range(10):
+        for pos1 in range(10):
+          for total, count in die_sum_distribution:
+            new_pos0 = (pos0 + total) % 10
+            new_score0 = score0 + (new_pos0 + 1)
+            if new_score0 >= 21:
+              wins[score0, score1, pos0, pos1, 0] += count
+            else:
+              wins[score0, score1, pos0, pos1, 0] += (
+                  count * wins[score1, new_score0, pos1, new_pos0, 1])
+              wins[score0, score1, pos0, pos1, 1] += (
+                  count * wins[score1, new_score0, pos1, new_pos0, 0])
+
+  return wins[0, 0, pos[0], pos[1], :].max()
+
+
+def day21_part2(s):
   lines = s.splitlines()
   pos = np.array([int(lines[0][27:]), int(lines[1][27:])]) - 1
   die_sum_distribution = np.array(list(collections.Counter(
       sum(die) for die in itertools.product([1, 2, 3], repeat=3)).items()))
-
-  @numba_njit(cache=True)
-  def func(pos, die_sum_distribution):
-    wins = np.zeros((21, 21, 10, 10, 2), np.int64)
-    for total_score in range(40, -1, -1):
-      for score0 in range(min(20, total_score), max(total_score - 21, -1), -1):
-        score1 = total_score - score0
-        for pos0 in range(10):
-          for pos1 in range(10):
-            for total, count in die_sum_distribution:
-              new_pos0 = (pos0 + total) % 10
-              new_score0 = score0 + (new_pos0 + 1)
-              if new_score0 >= 21:
-                wins[score0, score1, pos0, pos1, 0] += count
-              else:
-                wins[score0, score1, pos0, pos1, 0] += (
-                    count * wins[score1, new_score0, pos1, new_pos0, 1])
-                wins[score0, score1, pos0, pos1, 1] += (
-                    count * wins[score1, new_score0, pos1, new_pos0, 0])
-
-    return wins[0, 0, pos[0], pos[1], :].max()
-
-  return func(pos, die_sum_distribution)
+  return day21_func(pos, die_sum_distribution)
 
 
 check_eq(day21_part2(s1), 444356092776315)
@@ -4057,7 +4073,90 @@ puzzle.verify(2, day22e_part2)  # ~330 ms vs. previous ~380 ms.
 # It looks like the overhead of maintaining the Kdtree is too great.
 
 # %%
-def day22(s, *, part2=False):  # Mangled numba version of day22d; fastest.
+# Mangled numba version of day22d; fastest.
+
+@numba.njit
+def day22_func(states, cuboids):
+
+  def inside(a, b):
+    (ax, ay, az), (bx, by, bz) = a, b
+    return (ax[0] >= bx[0] and ay[0] >= by[0] and az[0] >= bz[0] and
+            ax[1] <= bx[1] and ay[1] <= by[1] and az[1] <= bz[1])
+
+  def outside(a, b):
+    (ax, ay, az), (bx, by, bz) = a, b
+    return (ax[0] > bx[1] or ay[0] > by[1] or az[0] > bz[1] or
+            ax[1] < bx[0] or ay[1] < by[0] or az[1] < bz[0])
+
+  def replace(tuple_, index, value):
+    if using_numba:
+      setitem = numba.cpython.unsafe.tuple.tuple_setitem
+      return setitem(tuple_, index, value)  # pylint: disable=no-value-for-parameter
+    return tuple_[:index] + (value,) + tuple_[index + 1:]
+
+  def to_tuple(array):
+    if using_numba:
+      to_fixed = numba.np.unsafe.ndarray.to_fixed_tuple  # pylint: disable=no-member
+      return to_fixed(array[0], 2), to_fixed(array[1], 2), to_fixed(array[2], 2)
+    return tuple(array[0]), tuple(array[1]), tuple(array[2])
+
+  def subdivide_a_subtracting_b(a, b):  # Faster; smaller number of subcells.
+    boxes = [a]
+    finalized: list[tuple[tuple[int, int, int], tuple[int, int, int]]] = []
+    dims = np.argsort(
+        np.array([a[0][0] - a[0][1], a[1][0] - a[1][1], a[2][0] - a[2][1]]))
+    for dim in dims:
+      new_boxes = []
+      for box in boxes:
+        (a1, a2), (b1, b2) = box[dim], b[dim]
+        # assert not inside(box, b) and not outside(box, b)
+        if a1 >= b1 and a2 <= b2:
+          new_boxes.append(box)  # No subdivision along this dimension.
+          continue
+        if a1 < b1 and a2 > b2:
+          finalized.extend((replace(box, dim, (a1, b1 - 1)), replace(box, dim, (b2 + 1, a2))))
+          box2 = replace(box, dim, (b1, b2))
+        elif a1 >= b1 and a2 > b2:
+          box2 = replace(box, dim, (a1, b2))
+          finalized.append(replace(box, dim, (b2 + 1, a2)))
+        else:  # a1 < b1 and a2 <= b2:
+          finalized.append(replace(box, dim, (a1, b1 - 1)))
+          box2 = replace(box, dim, (b1, a2))
+        if outside(box2, b):
+          finalized.append(box2)
+        elif not inside(box2, b):
+          new_boxes.append(box2)
+      boxes = new_boxes
+    return finalized
+
+  # Disjoint union of "on" cubes.
+  # pylint: disable-next=consider-using-set-comprehension
+  cells = set([to_tuple(cuboids[0]) for _ in range(0)])  # Typed empty set.
+
+  for state, cuboid_array in zip(states, cuboids):
+    cuboid = to_tuple(cuboid_array)
+    cells_to_add, cells_to_delete = [], []
+    for cell in cells:
+      if outside(cell, cuboid):
+        continue
+      cells_to_delete.append(cell)
+      if not inside(cell, cuboid):
+        cells_to_add.extend(subdivide_a_subtracting_b(cell, cuboid))
+
+    if state:
+      cells_to_add.append(cuboid)
+    cells = cells.difference(set(cells_to_delete)).union(set(cells_to_add))
+
+  total = 0
+  for cell in cells:
+    volume = 1
+    for c in range(3):
+      volume *= cell[c][1] - cell[c][0] + 1
+    total += volume
+  return total
+
+
+def day22(s, *, part2=False):
   lines = s.splitlines()
   states, cuboids = [], []
   for line in lines:
@@ -4068,89 +4167,7 @@ def day22(s, *, part2=False):  # Mangled numba version of day22d; fastest.
       states.append(state == 'on')
       cuboids.append(cuboid)
 
-  using_numba = 'numba' in globals()
-
-  @numba_njit(cache=True)
-  def func(states, cuboids):
-
-    def inside(a, b):
-      (ax, ay, az), (bx, by, bz) = a, b
-      return (ax[0] >= bx[0] and ay[0] >= by[0] and az[0] >= bz[0] and
-              ax[1] <= bx[1] and ay[1] <= by[1] and az[1] <= bz[1])
-
-    def outside(a, b):
-      (ax, ay, az), (bx, by, bz) = a, b
-      return (ax[0] > bx[1] or ay[0] > by[1] or az[0] > bz[1] or
-              ax[1] < bx[0] or ay[1] < by[0] or az[1] < bz[0])
-
-    def replace(tuple_, index, value):
-      if using_numba:
-        setitem = numba.cpython.unsafe.tuple.tuple_setitem
-        return setitem(tuple_, index, value)  # pylint: disable=no-value-for-parameter
-      return tuple_[:index] + (value,) + tuple_[index + 1:]
-
-    def to_tuple(array):
-      if using_numba:
-        to_fixed = numba.np.unsafe.ndarray.to_fixed_tuple  # pylint: disable=no-member
-        return to_fixed(array[0], 2), to_fixed(array[1], 2), to_fixed(array[2], 2)
-      return tuple(array[0]), tuple(array[1]), tuple(array[2])
-
-    def subdivide_a_subtracting_b(a, b):  # Faster; smaller number of subcells.
-      boxes = [a]
-      finalized: list[tuple[tuple[int, int, int], tuple[int, int, int]]] = []
-      dims = np.argsort(
-          np.array([a[0][0] - a[0][1], a[1][0] - a[1][1], a[2][0] - a[2][1]]))
-      for dim in dims:
-        new_boxes = []
-        for box in boxes:
-          (a1, a2), (b1, b2) = box[dim], b[dim]
-          # assert not inside(box, b) and not outside(box, b)
-          if a1 >= b1 and a2 <= b2:
-            new_boxes.append(box)  # No subdivision along this dimension.
-            continue
-          if a1 < b1 and a2 > b2:
-            finalized.extend((replace(box, dim, (a1, b1 - 1)), replace(box, dim, (b2 + 1, a2))))
-            box2 = replace(box, dim, (b1, b2))
-          elif a1 >= b1 and a2 > b2:
-            box2 = replace(box, dim, (a1, b2))
-            finalized.append(replace(box, dim, (b2 + 1, a2)))
-          else:  # a1 < b1 and a2 <= b2:
-            finalized.append(replace(box, dim, (a1, b1 - 1)))
-            box2 = replace(box, dim, (b1, a2))
-          if outside(box2, b):
-            finalized.append(box2)
-          elif not inside(box2, b):
-            new_boxes.append(box2)
-        boxes = new_boxes
-      return finalized
-
-    # Disjoint union of "on" cubes.
-    # pylint: disable-next=consider-using-set-comprehension
-    cells = set([to_tuple(cuboids[0]) for _ in range(0)])  # Typed empty set.
-
-    for state, cuboid_array in zip(states, cuboids):
-      cuboid = to_tuple(cuboid_array)
-      cells_to_add, cells_to_delete = [], []
-      for cell in cells:
-        if outside(cell, cuboid):
-          continue
-        cells_to_delete.append(cell)
-        if not inside(cell, cuboid):
-          cells_to_add.extend(subdivide_a_subtracting_b(cell, cuboid))
-
-      if state:
-        cells_to_add.append(cuboid)
-      cells = cells.difference(set(cells_to_delete)).union(set(cells_to_add))
-
-    total = 0
-    for cell in cells:
-      volume = 1
-      for c in range(3):
-        volume *= cell[c][1] - cell[c][0] + 1
-      total += volume
-    return total
-
-  return func(np.array(states), np.array(cuboids))
+  return day22_func(np.array(states), np.array(cuboids))
 
 
 check_eq(day22(s1), 39)  # ~4 s for numba compilation.
@@ -4508,7 +4525,130 @@ day23c_part2 = functools.partial(day23c, part2=True)
 # puzzle.verify(2, day23c_part2)  # ~6.0 s with A*  (~5.2 s with Dijkstra).
 
 # %%
-def day23(s, *, part2=False):  # Dijkstra/A*, but mangled to support numba.
+# Dijkstra/A*, but mangled to support numba.
+
+@numba.njit
+def day23_func(nrows, start_state, end_state, state_size):
+  # State consists of the 7 eligible hallway locations and the room locations.
+  cost_for_id = {0: 1, 1: 10, 2: 100, 3: 1000}
+
+  def apply_move(state, i0, i1):
+    id = state[i0]
+    # assert 0 <= id < 4 and state[i1] < 0
+    # assert i1 < 7 or id == (i1 - 7) % 4
+    if using_numba:
+      # https://numba.discourse.group/t/how-to-use-a-sequence-as-dict-key/431/11
+      # https://github.com/numba/numba/blob/master/numba/tests/test_unsafe_intrinsics.py
+      if 1:  # Fast.
+        setitem = numba.cpython.unsafe.tuple.tuple_setitem
+        return setitem(setitem(state, i0, -1), i1, id)  # pylint: disable=no-value-for-parameter
+      # Slower.
+      state2 = np.array(state)
+      state2[i0] = -1
+      state2[i1] = id
+      to_fixed = numba.np.unsafe.ndarray.to_fixed_tuple  # pylint: disable=no-member
+      return to_fixed(state2, state_size)
+    state2 = list(state)
+    state2[i0] = -1
+    state2[i1] = id
+    return tuple(state2)
+
+  def lower_bound_cost(state):
+    cost = 0
+    for i0 in range(7):
+      id = state[i0]
+      if id >= 0:
+        move_right = i0 <= id + 1
+        cost += ((id - i0 + 2) * 2 - (i0 == 0) if move_right else
+                 (i0 - id - 1) * 2 - (i0 == 6)) * cost_for_id[id]
+    for row in range(nrows):
+      for j in range(4):
+        i0 = 7 + row * 4 + j
+        id = state[i0]
+        if id >= 0:
+          if id != j:
+            cost += (row + 2 + abs(j - id) * 2) * cost_for_id[id]
+    return cost
+
+  assert lower_bound_cost(end_state) == 0
+  use_a_star = True  # A* search rather than ordinary Dijkstra algorithm.
+  distances = {start_state: 0}
+  pq = [(0, start_state)]
+  while pq:
+    _, state = heapq.heappop(pq)
+    distance = distances[state]
+    if state == end_state:
+      return distance
+
+    def consider(i0, i1, move_cost):
+      candidate_d = distance + move_cost
+      state2 = apply_move(state, i0, i1)
+      if state2 not in distances or candidate_d < distances[state2]:
+        distances[state2] = candidate_d
+        # https://en.wikipedia.org/wiki/A*_search_algorithm
+        f = candidate_d + lower_bound_cost(state2) if use_a_star else candidate_d
+        heapq.heappush(pq, (f, state2))
+
+    # Move from the hallway position `i0` to a room `j`.
+    for i0 in range(7):
+      id = state[i0]
+      if id < 0:
+        continue
+      for row in range(nrows - 1, -1, -1):
+        if state[7 + row * 4 + id] < 0:
+          break
+      else:
+        continue
+      # ("any(state[7 + i * 4 + id] != id for i in range(row + 1, nrows))" disallowed in numba.)
+      bad = False
+      for i in range(row + 1, nrows):
+        if state[7 + i * 4 + id] != id:
+          bad = True
+          break
+      if bad:
+        continue
+      i1 = 7 + row * 4 + id
+      move_right = i0 <= id + 1
+      for k in (range(i0 + 1, 2 + id) if move_right else range(2 + id, i0)):
+        if state[k] >= 0:
+          break
+      else:
+        move_cost = ((id - i0 + 2) * 2 - (i0 == 0) + row if move_right else
+                     (i0 - id - 1) * 2 - (i0 == 6) + row) * cost_for_id[id]
+        consider(i0, i1, move_cost)
+
+    # Move from a room `j` to the hallway position `i1`.
+    for j in range(4):
+      for row in range(nrows):
+        if state[7 + row * 4 + j] >= 0:
+          break
+      else:
+        continue
+      i0 = 7 + row * 4 + j
+      id = state[i0]
+      if id == j:
+        for i in range(row + 1, nrows):
+          if state[7 + i * 4 + j] != id:
+            break
+        else:
+          continue
+      for i1 in range(2 + j, 7):  # Move right in hallway.
+        for k in range(2 + j, i1 + 1):
+          if state[k] >= 0:
+            break
+        else:
+          move_cost = ((i1 - j - 1) * 2 - (i1 == 6) + row) * cost_for_id[id]
+          consider(i0, i1, move_cost)
+      for i1 in range(0, 2 + j):  # Move left in hallway
+        for k in range(i1, 2 + j):
+          if state[k] >= 0:
+            break
+        else:
+          move_cost = ((j - i1 + 2) * 2 - (i1 == 0) + row) * cost_for_id[id]
+          consider(i0, i1, move_cost)
+
+
+def day23(s, *, part2=False):
   lines = s.splitlines()
   letters = [[line[3], line[5], line[7], line[9]] for line in lines[2:4]]
   if part2:
@@ -4518,129 +4658,7 @@ def day23(s, *, part2=False):  # Dijkstra/A*, but mangled to support numba.
       [-1] * 7 + [ord(ch) - ord('A') for ch in more_itertools.flatten(letters)])
   end_state = tuple([-1] * 7 + [0, 1, 2, 3] * nrows)
   state_size = len(start_state)
-  using_numba = 'numba' in globals()
-
-  @numba_njit(cache=True)
-  def func(nrows, start_state, end_state, state_size):
-    # State consists of the 7 eligible hallway locations and the room locations.
-    cost_for_id = {0: 1, 1: 10, 2: 100, 3: 1000}
-
-    def apply_move(state, i0, i1):
-      id = state[i0]
-      # assert 0 <= id < 4 and state[i1] < 0
-      # assert i1 < 7 or id == (i1 - 7) % 4
-      if using_numba:
-        # https://numba.discourse.group/t/how-to-use-a-sequence-as-dict-key/431/11
-        # https://github.com/numba/numba/blob/master/numba/tests/test_unsafe_intrinsics.py
-        if 1:  # Fast.
-          setitem = numba.cpython.unsafe.tuple.tuple_setitem
-          return setitem(setitem(state, i0, -1), i1, id)  # pylint: disable=no-value-for-parameter
-        # Slower.
-        state2 = np.array(state)
-        state2[i0] = -1
-        state2[i1] = id
-        to_fixed = numba.np.unsafe.ndarray.to_fixed_tuple  # pylint: disable=no-member
-        return to_fixed(state2, state_size)
-      state2 = list(state)
-      state2[i0] = -1
-      state2[i1] = id
-      return tuple(state2)
-
-    def lower_bound_cost(state):
-      cost = 0
-      for i0 in range(7):
-        id = state[i0]
-        if id >= 0:
-          move_right = i0 <= id + 1
-          cost += ((id - i0 + 2) * 2 - (i0 == 0) if move_right else
-                   (i0 - id - 1) * 2 - (i0 == 6)) * cost_for_id[id]
-      for row in range(nrows):
-        for j in range(4):
-          i0 = 7 + row * 4 + j
-          id = state[i0]
-          if id >= 0:
-            if id != j:
-              cost += (row + 2 + abs(j - id) * 2) * cost_for_id[id]
-      return cost
-
-    assert lower_bound_cost(end_state) == 0
-    use_a_star = True  # A* search rather than ordinary Dijkstra algorithm.
-    distances = {start_state: 0}
-    pq = [(0, start_state)]
-    while pq:
-      _, state = heapq.heappop(pq)
-      distance = distances[state]
-      if state == end_state:
-        return distance
-
-      def consider(i0, i1, move_cost):
-        candidate_d = distance + move_cost
-        state2 = apply_move(state, i0, i1)
-        if state2 not in distances or candidate_d < distances[state2]:
-          distances[state2] = candidate_d
-          # https://en.wikipedia.org/wiki/A*_search_algorithm
-          f = candidate_d + lower_bound_cost(state2) if use_a_star else candidate_d
-          heapq.heappush(pq, (f, state2))
-
-      # Move from the hallway position `i0` to a room `j`.
-      for i0 in range(7):
-        id = state[i0]
-        if id < 0:
-          continue
-        for row in range(nrows - 1, -1, -1):
-          if state[7 + row * 4 + id] < 0:
-            break
-        else:
-          continue
-        # ("any(state[7 + i * 4 + id] != id for i in range(row + 1, nrows))" disallowed in numba.)
-        bad = False
-        for i in range(row + 1, nrows):
-          if state[7 + i * 4 + id] != id:
-            bad = True
-            break
-        if bad:
-          continue
-        i1 = 7 + row * 4 + id
-        move_right = i0 <= id + 1
-        for k in (range(i0 + 1, 2 + id) if move_right else range(2 + id, i0)):
-          if state[k] >= 0:
-            break
-        else:
-          move_cost = ((id - i0 + 2) * 2 - (i0 == 0) + row if move_right else
-                       (i0 - id - 1) * 2 - (i0 == 6) + row) * cost_for_id[id]
-          consider(i0, i1, move_cost)
-
-      # Move from a room `j` to the hallway position `i1`.
-      for j in range(4):
-        for row in range(nrows):
-          if state[7 + row * 4 + j] >= 0:
-            break
-        else:
-          continue
-        i0 = 7 + row * 4 + j
-        id = state[i0]
-        if id == j:
-          for i in range(row + 1, nrows):
-            if state[7 + i * 4 + j] != id:
-              break
-          else:
-            continue
-        for i1 in range(2 + j, 7):  # Move right in hallway.
-          for k in range(2 + j, i1 + 1):
-            if state[k] >= 0:
-              break
-          else:
-            move_cost = ((i1 - j - 1) * 2 - (i1 == 6) + row) * cost_for_id[id]
-            consider(i0, i1, move_cost)
-        for i1 in range(0, 2 + j):  # Move left in hallway
-          for k in range(i1, 2 + j):
-            if state[k] >= 0:
-              break
-          else:
-            move_cost = ((j - i1 + 2) * 2 - (i1 == 0) + row) * cost_for_id[id]
-            consider(i0, i1, move_cost)
-
-  return func(nrows, start_state, end_state, state_size)
+  return day23_func(nrows, start_state, end_state, state_size)
 
 
 # ~6 s for numba compilation.
@@ -5072,54 +5090,57 @@ _ = day25c(puzzle.input, visualize=True)  # Slow; ~14 s.
 
 
 # %%
-def day25(s):  # Fastest: active sets and numba.
+# Fastest: active sets and numba.
+
+@numba.njit
+def day25_func(grid):
+  height, width = grid.shape
+  candidate_right = [(y, x) for y in range(height) for x in range(width)
+                     if grid[y, x] == '>' and grid[y, (x + 1) % width] == '.']
+  candidate_down = [(y, x) for y in range(height) for x in range(width)
+                    if grid[y, x] == 'v' and grid[(y + 1) % height, x] == '.']
+
+  for step in range(1, 10**8):
+    moved = False
+
+    new_candidate_right = []
+    for y, x in candidate_right:
+      x2 = (x + 1) % width
+      if grid[y, x2] == '.':
+        moved = True
+        grid[y, x] = '.'
+        grid[y, x2] = '>'
+        if grid[y, (x + 2) % width] == '.':
+          new_candidate_right.append((y, x2))
+        if grid[(y - 1) % height, x] == 'v':
+          candidate_down.append(((y - 1) % height, x))
+        elif grid[y, (x - 1) % width] == '>':
+          new_candidate_right.append((y, (x - 1) % width))
+    candidate_right = new_candidate_right
+
+    new_candidate_down = []
+    for y, x in candidate_down:
+      y2 = (y + 1) % height
+      if grid[y2, x] == '.':
+        moved = True
+        grid[y, x] = '.'
+        grid[y2, x] = 'v'
+        if grid[(y + 2) % height, x] == '.':
+          new_candidate_down.append((y2, x))
+        if grid[y, (x - 1) % width] == '>':
+          candidate_right.append((y, (x - 1) % width))
+        elif grid[(y - 1) % height, x] == 'v':
+          new_candidate_down.append(((y - 1) % height, x))
+    candidate_down = new_candidate_down
+
+    if not moved:
+      return step
+
+
+def day25(s):
   grid = np.array([list(line) for line in s.splitlines()])
+  return day25_func(grid)
 
-  @numba_njit(cache=True)
-  def func(grid):
-    height, width = grid.shape
-    candidate_right = [(y, x) for y in range(height) for x in range(width)
-                       if grid[y, x] == '>' and grid[y, (x + 1) % width] == '.']
-    candidate_down = [(y, x) for y in range(height) for x in range(width)
-                      if grid[y, x] == 'v' and grid[(y + 1) % height, x] == '.']
-
-    for step in range(1, 10**8):
-      moved = False
-
-      new_candidate_right = []
-      for y, x in candidate_right:
-        x2 = (x + 1) % width
-        if grid[y, x2] == '.':
-          moved = True
-          grid[y, x] = '.'
-          grid[y, x2] = '>'
-          if grid[y, (x + 2) % width] == '.':
-            new_candidate_right.append((y, x2))
-          if grid[(y - 1) % height, x] == 'v':
-            candidate_down.append(((y - 1) % height, x))
-          elif grid[y, (x - 1) % width] == '>':
-            new_candidate_right.append((y, (x - 1) % width))
-      candidate_right = new_candidate_right
-
-      new_candidate_down = []
-      for y, x in candidate_down:
-        y2 = (y + 1) % height
-        if grid[y2, x] == '.':
-          moved = True
-          grid[y, x] = '.'
-          grid[y2, x] = 'v'
-          if grid[(y + 2) % height, x] == '.':
-            new_candidate_down.append((y2, x))
-          if grid[y, (x - 1) % width] == '>':
-            candidate_right.append((y, (x - 1) % width))
-          elif grid[(y - 1) % height, x] == 'v':
-            new_candidate_down.append(((y - 1) % height, x))
-      candidate_down = new_candidate_down
-
-      if not moved:
-        return step
-
-  return func(grid)
 
 check_eq(day25(s1), 58)
 puzzle.verify(1, day25)  # ~180 ms.  (~1100 ms without numba)
@@ -5233,11 +5254,6 @@ if 0:
 
 # %% [markdown]
 # [[Open the notebook in mybinder.org]](https://mybinder.org/v2/gh/hhoppe/advent_of_code_2021/main?filepath=advent_of_code_2021.ipynb)
-#
-# Currently there are problems in using `numba` within `mybinder.org`
-# (i.e., after `pip install numba`):
-# - `numpy` requires older `numba==0.51.2`
-# - `njit(cache=True)` fails at runtime, for unknown reason.
 
 # %% [markdown]
 # <!-- For Emacs:
