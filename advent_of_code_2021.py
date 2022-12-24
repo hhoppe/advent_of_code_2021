@@ -80,6 +80,7 @@ hh.start_timing_notebook_cells()
 
 # %%
 YEAR = 2021
+SHOW_BIG_MEDIA = False
 
 # %%
 # (1) To obtain puzzle inputs and answers, we first try these paths/URLs:
@@ -295,15 +296,16 @@ def day3(s, *, part2=False):
     s1, s2 = most_and_least_common(lines)
     return int(s1, base=2) * int(s2, base=2)
 
-  def cull_lines(part):
+  def cull_lines(examine_least: bool):
     lines2 = lines
+    # Iterate over successive positions in the string.
     for i in itertools.count():
-      s = most_and_least_common(lines2)[part]
-      lines2 = [line for line in lines2 if line[i] == s[i]]
+      s0 = most_and_least_common(lines2)[examine_least]
+      lines2 = [line for line in lines2 if line[i] == s0[i]]
       if len(lines2) == 1:
         return int(lines2[0], base=2)
 
-  return cull_lines(0) * cull_lines(1)
+  return cull_lines(False) * cull_lines(True)
 
 
 check_eq(day3(s1), 198)
@@ -324,7 +326,7 @@ puzzle.verify(2, day3_part2)  # ~22 ms.
 #
 # ---
 #
-# For this puzzle, it's elegant to represent the array of bingo boards
+# For this puzzle, it is elegant to represent the array of bingo boards
 # as a single **3D array** (using `numpy`).
 #
 # The resulting code
@@ -569,6 +571,7 @@ day5_part2 = functools.partial(day5, part2=True)
 check_eq(day5_part2(s1), 12)
 puzzle.verify(2, day5_part2)  # ~9 ms.
 
+# %%
 _ = day5_part2(puzzle.input, visualize=True)
 media.set_max_output_height(3000)
 
@@ -1123,6 +1126,7 @@ day9_part2 = functools.partial(day9, part2=True)
 check_eq(day9_part2(s1), 1134)
 puzzle.verify(2, day9_part2)  # ~7 ms.
 
+# %%
 _ = day9_part2(puzzle.input, visualize=True)
 
 # %% [markdown]
@@ -1367,6 +1371,7 @@ day11_part2 = functools.partial(day11, part2=True)
 check_eq(day11_part2(s1), 195)
 puzzle.verify(2, day11_part2)  # ~15 ms.
 
+# %%
 _ = day11_part2(puzzle.input, visualize=True)
 
 # %% [markdown]
@@ -1557,9 +1562,9 @@ def day13a(s, *, part2=False):  # Most compact; set-based.
     if not part2:
       return len(dots)
 
-  s = '\n'.join(''.join('.#'[(x, y) in dots] for x in range(39))
-                for y in range(6))
-  return advent_of_code_ocr.convert_6(s)
+  gridtext = '\n'.join(''.join('.#'[(x, y) in dots] for x in range(39))
+                       for y in range(6))
+  return advent_of_code_ocr.convert_6(gridtext)
 
 
 check_eq(day13a(s1), 17)
@@ -1607,6 +1612,7 @@ puzzle.verify(1, day13b)  # ~2 ms.
 
 day13b_part2 = functools.partial(day13b, part2=True)
 puzzle.verify(2, day13b_part2)  # ~4 ms.  e.g. 'EPLGRULR'.
+
 _ = day13b_part2(puzzle.input, visualize=True)
 
 
@@ -1638,6 +1644,8 @@ puzzle.verify(1, day13)  # ~4 ms.
 
 day13_part2 = functools.partial(day13, part2=True)
 puzzle.verify(2, day13_part2)  # ~4 ms.  e.g. 'EPLGRULR'.
+
+# %%
 _ = day13_part2(puzzle.input, visualize=True)
 
 # %% [markdown]
@@ -1970,6 +1978,8 @@ puzzle.verify(1, day15)  # ~14 ms.
 day15_part2 = functools.partial(day15, part2=True)
 check_eq(day15_part2(s1), 315)
 puzzle.verify(2, day15_part2)  # ~90 ms.
+
+# %%
 _ = day15_part2(puzzle.input, visualize=True)
 
 # %% [markdown]
@@ -2262,6 +2272,8 @@ day17_part2 = functools.partial(day17, part2=True)
 check_eq(day17_part2(s1), 112)
 check_eq(day17_part2(s2), 112)
 puzzle.verify(2, day17_part2)  # ~6 ms.
+
+# %%
 _ = day17_part2(puzzle.input, visualize=True)
 
 # %% [markdown]
@@ -2345,7 +2357,7 @@ s5 = """\
 def day18a(s, *, part2=False, return_snail=False):  # Using List-based tree.
 
   def parse_snail(line):
-    # return eval(line)  # Unsafe.
+    # (Next solution instead uses ast.literal_eval.)
 
     def recurse(s):
       if s[0] == '[':
@@ -3226,6 +3238,8 @@ puzzle.verify(1, day20)  # ~3 ms.
 day20_part2 = functools.partial(day20, part2=True)
 check_eq(day20_part2(s1), 3351)
 puzzle.verify(2, day20_part2)  # ~66 ms.
+
+# %%
 _ = day20_part2(puzzle.input, visualize=True)
 
 # %% [markdown]
@@ -3436,7 +3450,7 @@ _ = day21d_part2(puzzle.input, visualize=True)
 # Fastest, using numba.
 
 @numba.njit
-def day21_func(pos, die_sum_distribution):
+def day21_part2_func(pos, die_sum_distribution):
   wins = np.zeros((21, 21, 10, 10, 2), np.int64)
   for total_score in range(40, -1, -1):
     for score0 in range(min(20, total_score), max(total_score - 21, -1), -1):
@@ -3462,7 +3476,7 @@ def day21_part2(s):
   pos = np.array([int(lines[0][27:]), int(lines[1][27:])]) - 1
   die_sum_distribution = np.array(list(collections.Counter(
       sum(die) for die in itertools.product([1, 2, 3], repeat=3)).items()))
-  return day21_func(pos, die_sum_distribution)
+  return day21_part2_func(pos, die_sum_distribution)
 
 
 check_eq(day21_part2(s1), 444356092776315)
@@ -4416,8 +4430,8 @@ check_eq(day23b(s1), 12521)  # ~700 ms
 day23b_part2 = functools.partial(day23b, part2=True)
 # check_eq(day23b_part2(s1), 44169)  # ~5.1 s.
 # puzzle.verify(2, day23b_part2)  # ~5.0 s.
-_ = day23b_part2(puzzle.input, visualize=True)  # ~5.0 s.
 
+_ = day23b_part2(puzzle.input, visualize=True)  # ~5.0 s.
 
 # %%
 def day23c(s, *, part2=False):  # Dijkstra or A* search.
@@ -5022,7 +5036,7 @@ def day25a(s):  # Compact and reasonably fast.
     for ch, dyx in zip(['>', 'v'], np.array([[0, 1], [1, 0]])):
       next = np.roll(grid, -dyx, axis=(0, 1))
       can_move = (grid == ch) & (next == '.')
-      moved |= bool(np.any(can_move))
+      moved |= bool(can_move.any())
       grid[can_move] = '.'
       grid[np.roll(can_move, dyx, axis=(0, 1))] = ch
     if not moved:
@@ -5066,7 +5080,7 @@ def day25c(s, *, verbose=False, visualize=False):  # With visualization.
     for ch, dyx in zip(['>', 'v'], np.array([[0, 1], [1, 0]])):
       next = np.roll(grid, -dyx, axis=(0, 1))
       can_move = (grid == ch) & (next == '.')
-      moved |= bool(np.any(can_move))
+      moved |= bool(can_move.any())
       grid[can_move] = '.'
       grid[np.roll(can_move, dyx, axis=(0, 1))] = ch
       if verbose:
@@ -5081,12 +5095,12 @@ def day25c(s, *, verbose=False, visualize=False):  # With visualization.
     if not moved:
       if visualize:
         images = [images[0]] * 50 + images + [images[-1]] * 50
-        if 0:  # ~2 MB embedded GIF.
-          media.show_video(images, codec='gif', fps=50)
+        media.show_video(images, codec='gif', fps=50)  # ~2 MB embedded GIF.
       return step
 
 
-_ = day25c(puzzle.input, visualize=True)  # Slow; ~14 s.
+if SHOW_BIG_MEDIA:
+  _ = day25c(puzzle.input, visualize=True)  # Slow; ~14 s.
 
 
 # %%
