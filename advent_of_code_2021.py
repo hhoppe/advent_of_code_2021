@@ -286,7 +286,7 @@ def day3(s, *, part2=False):
   lines = s.splitlines()
 
   def most_and_least_common(lines):
-    grid = np.array([[int(ch) for ch in line] for line in lines])
+    grid = np.array([list(line) for line in lines], int)
     t = grid.sum(axis=0)
     s1 = ''.join(str(int(b)) for b in t >= (len(lines) + 1) // 2)
     s2 = s1.translate(str.maketrans('01', '10'))
@@ -1001,7 +1001,7 @@ s1 = """\
 
 # %%
 def day9a(s, *, part2=False):  # Solution using Union-Find.  Relatively slow.
-  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()], int)
   dyxs = np.array([(0, -1), (0, 1), (-1, 0), (1, 0)])
   t = np.pad(grid, 1, constant_values=10)
   neighbors = np.array([np.roll(t, -dyx, (0, 1))[1:-1, 1:-1] for dyx in dyxs])
@@ -1035,7 +1035,7 @@ puzzle.verify(2, day9a_part2)  # ~110 ms.
 
 # %%
 def day9b(s, *, part2=False, visualize=False):  # Faster using numpy.
-  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()], int)
   dyxs = np.concatenate([[v, -v] for v in np.eye(grid.ndim, dtype=int)])
   t = np.pad(grid, 1, constant_values=10)
   neighbors = np.array([np.roll(t, -dyx, (0, 1))[1:-1, 1:-1] for dyx in dyxs])
@@ -1076,7 +1076,7 @@ puzzle.verify(2, day9b_part2)  # ~15 ms.
 
 # %%
 def day9(s, *, part2=False, visualize=False):  # Faster, using flat indexing.
-  grid = np.array([[int(c) for c in line] for line in s.splitlines()])
+  grid = np.array([list(line) for line in s.splitlines()], int)
   dyxs = np.concatenate([[v, -v] for v in np.eye(grid.ndim, dtype=int)])
   t = np.pad(grid, 1, constant_values=10)
   neighbors = np.array([np.roll(t, -dyx, (0, 1))[1:-1, 1:-1] for dyx in dyxs])
@@ -1245,7 +1245,7 @@ s1 = """\
 
 # %%
 def day11a(s, *, part2=False):  # Compact.
-  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()], int)
   total = 0
 
   for step in itertools.count(1):
@@ -1279,7 +1279,7 @@ puzzle.verify(2, day11a_part2)  # ~225 ms.
 
 # %%
 def day11b(s, *, part2=False):  # Faster, using ndenumerate and bool array.
-  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()], int)
   dyxs = set(itertools.product((-1, 0, 1), repeat=2)) - {(0, 0)}
   height, width = grid.shape
   total = 0
@@ -1316,7 +1316,7 @@ puzzle.verify(2, day11b_part2)  # ~30 ms.
 
 # %%
 def day11(s, *, part2=False, visualize=False):  # Fastest, using flat array.
-  grid0 = np.array([list(line) for line in s.splitlines()]).astype(int)
+  grid0 = np.array([list(line) for line in s.splitlines()], int)
   height, width = grid0.shape
   grid = grid0.ravel()
   dyxs = set(itertools.product((-1, 0, 1), repeat=2)) - {(0, 0)}
@@ -1562,9 +1562,8 @@ def day13a(s, *, part2=False):  # Most compact; set-based.
     if not part2:
       return len(dots)
 
-  gridtext = '\n'.join(''.join('.#'[(x, y) in dots] for x in range(39))
-                       for y in range(6))
-  return advent_of_code_ocr.convert_6(gridtext)
+  s2 = '\n'.join(''.join('.#'[(x, y) in dots] for x in range(39)) for y in range(6))
+  return advent_of_code_ocr.convert_6(s2)
 
 
 check_eq(day13a(s1), 17)
@@ -1796,7 +1795,7 @@ s1 = """\
 
 # %%
 def day15a(s, *, part2=False):  # Compact.
-  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()], int)
   if part2:
     grid = np.concatenate([
         np.concatenate([(grid + (y + x - 1)) % 9 + 1 for x in range(5)], axis=1)
@@ -1828,7 +1827,7 @@ puzzle.verify(2, day15a_part2)  # ~1700 ms.
 
 # %%
 def day15b(s, *, part2=False):  # Try A* search.
-  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()], int)
   if part2:
     grid = np.concatenate([
         np.concatenate([(grid + (y + x - 1)) % 9 + 1 for x in range(5)],
@@ -1907,7 +1906,7 @@ def day15c_func(grid):
 
 
 def day15c(s, *, part2=False):
-  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()], int)
   if part2:
     grid = np.concatenate([
         np.concatenate([(grid + (y + x - 1)) % 9 + 1 for x in range(5)], axis=1)
@@ -1957,7 +1956,7 @@ def day15_func(grid, visualize):
 
 
 def day15(s, *, part2=False, visualize=False):
-  grid = np.array([list(line) for line in s.splitlines()]).astype(int)
+  grid = np.array([list(line) for line in s.splitlines()], int)
   if part2:
     grid = np.concatenate([
         np.concatenate([(grid + (y + x - 1)) % 9 + 1 for x in range(5)], axis=1)
@@ -3419,11 +3418,9 @@ def day21d_part2(s, *, win_score=21, visualize=False):  # Most compact.
     fig, ax = plt.subplots()
     pos = ax.imshow(win0, vmin=0.3, vmax=0.7, cmap='jet',
                     origin='lower', extent=(0.5, 10.5, 0.5, 10.5))
-    ax.set_title('Probability that player 1 wins')
-    ax.set_xlabel('Starting position for player 1')
-    ax.set_ylabel('Starting position for player 2')
-    ax.set_xticks(np.arange(1, 11))
-    ax.set_yticks(np.arange(1, 11))
+    ax.set(title='Probability that player 1 wins',
+           xlabel='Starting position for player 1', ylabel='Starting position for player 2',
+           xticks=np.arange(1, 11), yticks=np.arange(1, 11))
     fig.colorbar(pos, ax=ax)
     plt.show()
     if 0:
@@ -3473,7 +3470,7 @@ def day21_part2_func(pos, die_sum_distribution):
 
 def day21_part2(s):
   lines = s.splitlines()
-  pos = np.array([int(lines[0][27:]), int(lines[1][27:])]) - 1
+  pos = np.array([lines[0][27:], lines[1][27:]], int) - 1
   die_sum_distribution = np.array(list(collections.Counter(
       sum(die) for die in itertools.product([1, 2, 3], repeat=3)).items()))
   return day21_part2_func(pos, die_sum_distribution)
