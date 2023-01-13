@@ -1,5 +1,7 @@
 # Advent of code 2021
 
+## **Content is now moved into https://github.com/hhoppe/advent_of_code/**
+
 [[**Open the notebook in Colab**]](https://colab.research.google.com/github/hhoppe/advent_of_code_2021/blob/main/advent_of_code_2021.ipynb)
 
 IPython/Jupyter [notebook](https://github.com/hhoppe/advent_of_code_2021/blob/main/advent_of_code_2021.ipynb) by [Hugues Hoppe](http://hhoppe.com/) with solutions to the [2021 Advent of Code puzzles](https://adventofcode.com/2021).
